@@ -193,7 +193,10 @@ if __name__ == "__main__":
             workpath = curdir
         if path.isdir(workpath):
             print("Valid Path...")
-            workpath = workpath + str('\\')
+                        if workpath.endswith('\\'):
+                pass
+            else:
+                workpath = workpath + str('\\')
             break
         else:
             print("Invalid path, check input...")
