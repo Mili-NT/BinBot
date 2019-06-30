@@ -6,4 +6,4 @@ This version of BinBot was ported from a personal version, so there may be small
 **Planned Features:**
 
 * Pastebin API support
-* Re-implementing the random URL generation function
+* Re-implementing the random URL generation function and proxy chain
