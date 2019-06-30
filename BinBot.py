@@ -1,11 +1,9 @@
 import random
-import string
 import requests
 from time import sleep
 from datetime import datetime
 from bs4 import BeautifulSoup
 import codecs
-import re
 from os import getcwd, path
 
 # Author: Mili
@@ -41,9 +39,7 @@ archive_url = "https://pastebin.com/archive/text"
 
 url_foundation = "https://pastebin.com"
 
-invalidtesturl = "https://pastebin.com/pBUoQBPlR"
-
-validtesturl = "https://pastebin.com/0ccVDAcy"
+curdir = getcwd()
 
 ConnectError = "<title>Pastebin.com - Page Removed</title>"
 
@@ -192,8 +188,9 @@ if __name__ == "__main__":
     """)
 
     while True:
-        workpath = input("Enter the path you wish to save text documents to: ")
-        print(workpath)
+        workpath = input("Enter the path you wish to save text documents to (enter curdir for current directory): ")
+        if workpath.lower() == 'curdir':
+            workpath = curdir
         if path.isdir(workpath):
             print("Valid Path...")
             workpath = workpath + str('\\')
