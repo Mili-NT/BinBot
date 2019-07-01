@@ -86,6 +86,16 @@ def ArchiveSearch(stop):
         amode_input = input("[r]aw or [f]iltered search (filtered search will make use of the ArchiveEngine and will return fewer results): ")
         if amode_input.lower() == 'r':
             arch_mode = 'r'
+            list_choice = input("Utilize blacklisting to avoid spam documents [y]/[n]: ")
+            if list_choice.lower() == 'y':
+                blacklist_input = input("Enter the phrases you wish to blacklist seperated by a comma: ").split(",")
+                for b in blacklist_input:
+                    blacklist.append(b)
+            elif list_choice.lower() == 'n':
+                pass
+            else:
+                print("invalid input.")
+                continue
             break
         elif amode_input.lower() == 'f':
             arch_mode = 'f'
