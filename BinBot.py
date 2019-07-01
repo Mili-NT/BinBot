@@ -122,7 +122,7 @@ def ArchiveSearch(stop):
             continue
     while True:
         if arch_runs > 0:
-            if arch_runs >= stop:
+            if arch_runs >= stop and stop != 0:
                 print("Operation Finished... [" + str(datetime.now().strftime('%X')) + "]")
                 exit()
             print("Pastes fetched, cooling down for "+str(cooldown)+" seconds... ["+str(datetime.now().strftime('%X'))+"]")
