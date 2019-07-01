@@ -15,6 +15,7 @@ from os import getcwd, path
 #
 
 
+curdir = getcwd()
 
 user_agents = [
     'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
@@ -30,6 +31,7 @@ user_agents = [
 
 key_list = []
 
+blacklist = []
 
 taglist = ['<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
            '<textarea class="paste_textarea" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)" rows="10">',
@@ -39,7 +41,9 @@ archive_url = "https://pastebin.com/archive/text"
 
 url_foundation = "https://pastebin.com"
 
-curdir = getcwd()
+invalidtesturl = "https://pastebin.com/pBUoQBPlR"
+
+validtesturl = "https://pastebin.com/0ccVDAcy"
 
 ConnectError = "<title>Pastebin.com - Page Removed</title>"
 
@@ -90,6 +94,17 @@ def ArchiveSearch(stop):
                     "Enter the keywords you'd like to search for, seperated by a comma: ").split(",")
                 for k in keyword_input:
                     key_list.append(k)
+
+                list_choice = input("Utilize blacklisting to avoid spam documents [y]/[n]: ")
+                if list_choice.lower() == 'y':
+                    blacklist_input = input("Enter the phrases you wish to blacklist seperated by a comma: ").split(",")
+                    for b in blacklist_input:
+                        blacklist.append(b)
+                elif list_choice.lower() == 'n':
+                    pass
+                else:
+                    print("invalid input.")
+                    continue
                 break
             break
         else:
@@ -144,26 +159,42 @@ def ArchiveSearch(stop):
                     unprocessed = str(unprocessed).replace(e, "") # process the raw text by removing all html elements
                 if arch_mode == 'r':
                     if path.isdir(workpath) is True:
-                        arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
-                                                      .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
-                        arch_final_file.write(unprocessed)
-                        arch_final_file.close()
-                        arch_runs += 1
-                        continue
+                        for b in blacklist:
+                            if b in unprocessed:
+                                print("Blacklisted phrase detected, passing...")
+                                pass
+                            else:
+                                arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
+                                                              .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
+                                arch_final_file.write(unprocessed)
+                                arch_final_file.close()
+                                arch_runs += 1
+                                continue
                     else:
                         print("Making directory... ["+str(datetime.now().strftime('%X'))+"]")
-                        arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
-                                                      .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
-                        arch_final_file.write(unprocessed)
-                        arch_final_file.close()
-                        arch_runs += 1
-                        continue
+                        for b in blacklist:
+                            if b in unprocessed:
+                                print("Blacklisted phrase detected, passing...")
+                                pass
+                            else:
+                                arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
+                                                              .replace(":", "-").replace("/", "-") + ".txt", 'w+',
+                                                              'utf-8')
+                                arch_final_file.write(unprocessed)
+                                arch_final_file.close()
+                                arch_runs += 1
+                                continue
                 elif arch_mode == 'f':
                     if path.isdir(workpath) is True:
                         print("Running engine... ["+str(datetime.now().strftime('%X'))+"]")
-                        archive_engine(unprocessed)
-                        arch_runs += 1
-                        continue
+                        for b in blacklist:
+                            if b in unprocessed:
+                                print("Blacklisted phrase detected, passing...")
+                                pass
+                            else:
+                                archive_engine(unprocessed)
+                                arch_runs += 1
+                                continue
                     else:
                         print("Running engine... ["+str(datetime.now().strftime('%X'))+"]")
                         archive_engine(unprocessed)
@@ -193,7 +224,7 @@ if __name__ == "__main__":
             workpath = curdir
         if path.isdir(workpath):
             print("Valid Path...")
-                        if workpath.endswith('\\'):
+            if workpath.endswith('\\'):
                 pass
             else:
                 workpath = workpath + str('\\')
