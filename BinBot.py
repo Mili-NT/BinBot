@@ -122,15 +122,17 @@ def ArchiveSearch(stop):
             continue
     while True:
         if arch_runs > 0:
-            if arch_runs >= stop and stop != 0:
-                print("Operation Finished... [" + str(datetime.now().strftime('%X')) + "]")
+            print("Runs: "+str(arch_runs))
+            if arch_runs >= stop and stop is False:
+                print("Runs Complete, Operation Finished... [" + str(datetime.now().strftime('%X')) + "]")
                 exit()
-            print("Pastes fetched, cooling down for "+str(cooldown)+" seconds... ["+str(datetime.now().strftime('%X'))+"]")
-            sleep(cooldown/2)
-            print("Halfway through at ["+str(datetime.now().strftime('%X'))+"]")
-            sleep(cooldown/2)
-            print("resuming... ["+str(datetime.now().strftime('%X'))+"]")
-        if arch_runs < stop or stop == 0:
+            else:
+                print("Pastes fetched, cooling down for "+str(cooldown)+" seconds... ["+str(datetime.now().strftime('%X'))+"]")
+                sleep(cooldown/2)
+                print("Halfway through at ["+str(datetime.now().strftime('%X'))+"]")
+                sleep(cooldown/2)
+                print("resuming... ["+str(datetime.now().strftime('%X'))+"]")
+        if arch_runs < stop or stop is True:
             arch_page, arch_filename = archive_connect()
             arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
             sleep(2)
@@ -159,7 +161,7 @@ def ArchiveSearch(stop):
             for h in tablehrefs:
                 proch = h['href'] # fetch the URL param for each paste
                 print("params fetched... ["+str(datetime.now().strftime('%X'))+"]")
-                print("Acting on params... ["+str(datetime.now().strftime('%X'))+"]")
+                print("Acting on param "+str(proch)+"... ["+str(datetime.now().strftime('%X'))+"]")
                 full_arch_url = url_foundation + proch # Generate URLs by adding the processed parameter to the base URL
                 full_archpage = requests.get(full_arch_url, headers=random_headers())
                 sleep(5)
@@ -245,7 +247,11 @@ if __name__ == "__main__":
 
     while True:
         try:
-            stop_input = int(input("Enter the amount of successful pulls you wish to make (enter 0 for infinite): "))
+            stopinput_input = input("Run in a constant loop? [y]/[n]: ")
+            if stopinput_input.lower() == 'y':
+                stop_input = True
+            elif stopinput_input.lower() == 'n':
+                stop_input = int(input("Enter the amount of successful pulls you wish to make (enter 0 for infinite): "))
             limiter = int(input("Enter the request limit you wish to use (recommended: 5): "))
             cooldown = int(input("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200): "))
             break
