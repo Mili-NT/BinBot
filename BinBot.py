@@ -174,7 +174,7 @@ def ArchiveSearch(stop):
                         for b in blacklist:
                             if b in unprocessed:
                                 print("Blacklisted phrase detected, passing...")
-                                pass
+                                continue
                             else:
                                 arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
                                                               .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
@@ -187,7 +187,7 @@ def ArchiveSearch(stop):
                         for b in blacklist:
                             if b in unprocessed:
                                 print("Blacklisted phrase detected, passing...")
-                                pass
+                                continue
                             else:
                                 arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
                                                               .replace(":", "-").replace("/", "-") + ".txt", 'w+',
@@ -202,7 +202,7 @@ def ArchiveSearch(stop):
                         for b in blacklist:
                             if b in unprocessed:
                                 print("Blacklisted phrase detected, passing...")
-                                pass
+                                continue
                             else:
                                 archive_engine(unprocessed)
                                 arch_runs += 1
