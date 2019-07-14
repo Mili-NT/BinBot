@@ -262,7 +262,7 @@ if __name__ == "__main__":
             break
         elif list_choice.lower() == 'n':
             blacklisting = False
-            pass
+            break
         else:
             print("invalid input.")
             continue
