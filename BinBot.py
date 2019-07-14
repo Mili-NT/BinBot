@@ -83,18 +83,6 @@ def ArchiveSearch(stop):
         amode_input = input("[r]aw or [f]iltered search (filtered search will make use of the ArchiveEngine and will return fewer results): ")
         if amode_input.lower() == 'r':
             arch_mode = 'r'
-            list_choice = input("Utilize blacklisting to avoid spam documents [y]/[n]: ")
-            if list_choice.lower() == 'y':
-                blacklisting = True
-                blacklist_input = input("Enter the phrases you wish to blacklist seperated by a comma: ").split(",")
-                for b in blacklist_input:
-                    blacklist.append(b)
-            elif list_choice.lower() == 'n':
-                blacklisting = False
-                pass
-            else:
-                print("invalid input.")
-                continue
             break
         elif amode_input.lower() == 'f':
             arch_mode = 'f'
@@ -103,17 +91,6 @@ def ArchiveSearch(stop):
                     "Enter the keywords you'd like to search for, seperated by a comma: ").split(",")
                 for k in keyword_input:
                     key_list.append(k)
-
-                list_choice = input("Utilize blacklisting to avoid spam documents [y]/[n]: ")
-                if list_choice.lower() == 'y':
-                    blacklist_input = input("Enter the phrases you wish to blacklist seperated by a comma: ").split(",")
-                    for b in blacklist_input:
-                        blacklist.append(b)
-                elif list_choice.lower() == 'n':
-                    pass
-                else:
-                    print("invalid input.")
-                    continue
                 break
             break
         else:
@@ -273,6 +250,21 @@ if __name__ == "__main__":
             break
         except ValueError:
             print("Invalid Input.")
+            continue
+
+    while True:
+        list_choice = input("Utilize blacklisting to avoid spam documents [y]/[n]: ")
+        if list_choice.lower() == 'y':
+            blacklisting = True
+            blacklist_input = input("Enter the phrases you wish to blacklist seperated by a comma: ").split(",")
+            for b in blacklist_input:
+                blacklist.append(b)
+            break
+        elif list_choice.lower() == 'n':
+            blacklisting = False
+            pass
+        else:
+            print("invalid input.")
             continue
 
     ArchiveSearch(stop_input)
