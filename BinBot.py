@@ -66,7 +66,7 @@ def archive_connect():
 
 def archive_engine(prescan_text):
     for k in key_list:
-        if k in prescan_text:
+        if k.lower() in prescan_text.lower():
             today = datetime.now().strftime('%x')
             now = datetime.now().strftime('%X')
             creationdate = today + '~' + now
@@ -149,7 +149,7 @@ def ArchiveSearch(stop):
                     if path.isdir(workpath) is True:
                         if blacklisting is True:
                             for b in blacklist:
-                                if b in unprocessed:
+                                if b.lower() in unprocessed.lower():
                                     print("Blacklisted phrase detected, passing...")
                                     continue
                                 else:
@@ -170,7 +170,7 @@ def ArchiveSearch(stop):
                         print("Making directory... ["+str(datetime.now().strftime('%X'))+"]")
                         if blacklisting is True:
                             for b in blacklist:
-                                if b in unprocessed:
+                                if b.lower() in unprocessed.lower():
                                     print("Blacklisted phrase detected, passing...")
                                     continue
                                 else:
@@ -193,7 +193,7 @@ def ArchiveSearch(stop):
                         print("Running engine... ["+str(datetime.now().strftime('%X'))+"]")
                         if blacklisting is True:
                             for b in blacklist:
-                                if b in unprocessed:
+                                if b.lower() in unprocessed.lower():
                                     print("Blacklisted phrase detected, passing...")
                                     continue
                                 else:
