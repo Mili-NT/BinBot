@@ -1,5 +1,6 @@
 import random
 import requests
+import re
 from time import sleep
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -56,13 +57,42 @@ def random_headers():
     return {'User-Agent': random.choice(user_agents),'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
 
 def archive_connect():
-    archive_page = requests.get(archive_url,headers=random_headers())
-    today = datetime.now().strftime('%x')
-    now = datetime.now().strftime('%X')
-    creationdate = today + '~' + now
-    identifier = creationdate.replace("/", ".").replace(":", "-")
-    archive_filename = "[" + str(identifier) + "]"
-    return archive_page, archive_filename
+    def print_connecterror():
+        print(f"""
+    Exception occurred: {e} 
+    Possible causes: Poor/Non-functioning Internet connection or pastebin is unreachable 
+    Possible fixes: Troubleshoot internet connection or check status of {archive_url}
+            """)
+    def print_timeouterror():
+        print(f"""
+    Exception occurred: {e}
+    Possible causes: Too many requests made to {archive_url}
+    Possible fixes: Check firewall settings and check the status of {archive_url}.
+            """)
+    def print_genericerror():
+        print(f"""
+    Exception occurred: {e}
+            """)
+
+    while True:
+        try:
+            archive_page = requests.get(archive_url,headers=random_headers())
+            today = datetime.now().strftime('%x')
+            now = datetime.now().strftime('%X')
+            creationdate = today + '~' + now
+            identifier = creationdate.replace("/", ".").replace(":", "-")
+            archive_filename = "[" + str(identifier) + "]"
+            return archive_page, archive_filename
+        except Exception as e:
+            if e is requests.exceptions.ConnectionError:
+                print_connecterror()
+                continue
+            elif e is requests.exceptions.Timeout:
+                print_timeouterror()
+                continue
+            else:
+                print_genericerror()
+                continue
 
 def archive_engine(prescan_text):
     for k in key_list:
@@ -76,6 +106,40 @@ def archive_engine(prescan_text):
             keyfi.close()
         else:
             pass
+
+def parameter_connect(proch):
+    def print_connecterror():
+        print(f"""
+    Exception occurred: {e} 
+    Possible causes: Poor/Non-functioning Internet connection or pastebin is unreachable 
+    Possible fixes: Troubleshoot internet connection or check status of {archive_url}
+            """)
+    def print_timeouterror():
+        print(f"""
+    Exception occurred: {e}
+    Possible causes: Too many requests made to {archive_url}
+    Possible fixes: Check firewall settings and check the status of {archive_url}.
+            """)
+    def print_genericerror():
+        print(f"""
+    Exception occurred: {e}
+            """)
+
+    while True:
+        full_arch_url = url_foundation + proch  # Generate URLs by adding the processed parameter to the base URL
+        try:
+            full_archpage = requests.get(full_arch_url, headers=random_headers())
+            return full_archpage, full_arch_url
+        except Exception as e:
+            if e is requests.exceptions.ConnectionError:
+                print_connecterror()
+                continue
+            elif e is requests.exceptions.Timeout:
+                print_timeouterror()
+                continue
+            else:
+                print_genericerror()
+                continue
 
 def ArchiveSearch(stop):
     arch_runs = 0
@@ -138,8 +202,7 @@ def ArchiveSearch(stop):
                 proch = h['href'] # fetch the URL param for each paste
                 print("params fetched... ["+str(datetime.now().strftime('%X'))+"]")
                 print("Acting on param "+str(proch)+"... ["+str(datetime.now().strftime('%X'))+"]")
-                full_arch_url = url_foundation + proch # Generate URLs by adding the processed parameter to the base URL
-                full_archpage = requests.get(full_arch_url, headers=random_headers())
+                full_archpage, full_arch_url = parameter_connect(proch)
                 sleep(5)
                 item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
                 unprocessed = item_soup.find('textarea') # Fetch the raw text in the paste.
@@ -148,17 +211,23 @@ def ArchiveSearch(stop):
                 if arch_mode == 'r':
                     if path.isdir(workpath) is True:
                         if blacklisting is True:
+                            flagged = False
+                            compare_text = re.sub(r'\s+', '', unprocessed) # strip all whitespace for comparison
                             for b in blacklist:
-                                if b.lower() in unprocessed.lower():
+                                b = re.sub(r'\s+', '', b) # strip all whitespace for comparison
+                                if b.lower() in compare_text.lower():
                                     print("Blacklisted phrase detected, passing...")
-                                    continue
-                                else:
-                                    arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
-                                                                  .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
-                                    arch_final_file.write(unprocessed)
-                                    arch_final_file.close()
-                                    arch_runs += 1
-                                    continue
+                                    flagged = True
+
+                            if flagged is True:
+                                continue
+                            else:
+                                arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
+                                                              .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
+                                arch_final_file.write(unprocessed)
+                                arch_final_file.close()
+                                arch_runs += 1
+                                continue
                         elif blacklisting is False:
                             arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
                                                           .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
@@ -169,18 +238,24 @@ def ArchiveSearch(stop):
                     else:
                         print("Making directory... ["+str(datetime.now().strftime('%X'))+"]")
                         if blacklisting is True:
+                            flagged = False
+                            compare_text = re.sub(r'\s+', '', unprocessed)  # strip all whitespace for comparison
                             for b in blacklist:
-                                if b.lower() in unprocessed.lower():
+                                b = re.sub(r'\s+', '', b)  # strip all whitespace for comparison
+                                if b.lower() in compare_text.lower():
                                     print("Blacklisted phrase detected, passing...")
-                                    continue
-                                else:
-                                    arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
-                                                                  .replace(":", "-").replace("/", "-") + ".txt", 'w+',
-                                                                  'utf-8')
-                                    arch_final_file.write(unprocessed)
-                                    arch_final_file.close()
-                                    arch_runs += 1
-                                    continue
+                                    flagged = True
+
+                            if flagged is True:
+                                continue
+                            else:
+                                arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
+                                                              .replace(":", "-").replace("/", "-") + ".txt", 'w+',
+                                                              'utf-8')
+                                arch_final_file.write(unprocessed)
+                                arch_final_file.close()
+                                arch_runs += 1
+                                continue
                         elif blacklisting is False:
                             arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
                                                           .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
@@ -192,14 +267,20 @@ def ArchiveSearch(stop):
                     if path.isdir(workpath) is True:
                         print("Running engine... ["+str(datetime.now().strftime('%X'))+"]")
                         if blacklisting is True:
+                            flagged = False
+                            compare_text = re.sub(r'\s+', '', unprocessed)  # strip all whitespace for comparison
                             for b in blacklist:
-                                if b.lower() in unprocessed.lower():
+                                b = re.sub(r'\s+', '', b)  # strip all whitespace for comparison
+                                if b.lower() in compare_text.lower():
                                     print("Blacklisted phrase detected, passing...")
-                                    continue
-                                else:
-                                    archive_engine(unprocessed)
-                                    arch_runs += 1
-                                    continue
+                                    flagged = True
+
+                            if flagged is True:
+                                continue
+                            else:
+                                archive_engine(unprocessed)
+                                arch_runs += 1
+                                continue
                         else:
                             print("Running engine... ["+str(datetime.now().strftime('%X'))+"]")
                             archive_engine(unprocessed)
@@ -256,10 +337,26 @@ if __name__ == "__main__":
         list_choice = input("Utilize blacklisting to avoid spam documents [y]/[n]: ")
         if list_choice.lower() == 'y':
             blacklisting = True
-            blacklist_input = input("Enter the phrases you wish to blacklist seperated by a comma: ").split(",")
-            for b in blacklist_input:
-                blacklist.append(b)
+
+            while True:
+                bfile_input = input("Read blacklisted terms from file? [y]/[n]: ")
+                if bfile_input.lower() == 'n':
+                    blacklist_input = input("Enter the phrases you wish to blacklist separated by a comma: ").split(",")
+                    for b in blacklist_input:
+                        blacklist.append(b)
+                    break
+                elif bfile_input.lower() == 'y':
+                    print("File should be structured with one term per line, with no comma.")
+                    bpath = input("Enter the full path of the file: ")
+                    if path.isfile(bpath) is True:
+                        print("Blacklist file detected...")
+                        with open(bpath) as bfile:
+                            for bline in bfile:
+                                blacklist.append(bline)
+                        break
             break
+
+
         elif list_choice.lower() == 'n':
             blacklisting = False
             break
