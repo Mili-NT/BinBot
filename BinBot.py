@@ -154,6 +154,11 @@ def ArchiveSearch(stop):
                 filechoice = input("Load from file: [y]/[n]: ")
                 if filechoice.lower() == 'y':
                     filterfile_input = input("Enter full path: ")
+                    if path.isfile(filterfile_input):
+                        pass
+                    else:
+                        print("No Such File Found.")
+                        continue
                     with open(filterfile_input) as filterfile:
                         for lines in filterfile:
                             key_list.append(lines)
