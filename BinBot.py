@@ -151,11 +151,19 @@ def ArchiveSearch(stop):
         elif amode_input.lower() == 'f':
             arch_mode = 'f'
             while True:
-                keyword_input = input(
-                    "Enter the keywords you'd like to search for, seperated by a comma: ").split(",")
-                for k in keyword_input:
-                    key_list.append(k)
-                break
+                filechoice = input("Load from file: [y]/[n]: ")
+                if filechoice.lower() == 'y':
+                    filterfile_input = input("Enter full path: ")
+                    with open(filterfile_input) as filterfile:
+                        for lines in filterfile:
+                            key_list.append(lines)
+                        break
+                elif filechoice.lower() == 'n':
+                    keyword_input = input(
+                        "Enter the keywords you'd like to search for, seperated by a comma: ").split(",")
+                    for k in keyword_input:
+                        key_list.append(k)
+                    break
             break
         else:
             print("Invalid Input.")
