@@ -5,7 +5,9 @@ from time import sleep
 from datetime import datetime
 from bs4 import BeautifulSoup
 import codecs
-from os import getcwd, path
+from os import getcwd, path, walk
+from configparser import ConfigParser
+import yara
 
 # Author: Mili
 # Python Version: 3.6.0
@@ -14,6 +16,7 @@ from os import getcwd, path
 #
 # Variables, Setup, and Misc
 #
+parser = ConfigParser()
 
 curdir = getcwd()
 
@@ -141,38 +144,8 @@ def parameter_connect(proch):
                 print_genericerror()
                 continue
 
-def ArchiveSearch(stop):
+def ArchiveSearch(stop, amode):
     arch_runs = 0
-    while True:
-        amode_input = input("[r]aw or [f]iltered search (filtered search will make use of the ArchiveEngine and will return fewer results): ")
-        if amode_input.lower() == 'r':
-            arch_mode = 'r'
-            break
-        elif amode_input.lower() == 'f':
-            arch_mode = 'f'
-            while True:
-                filechoice = input("Load from file: [y]/[n]: ")
-                if filechoice.lower() == 'y':
-                    filterfile_input = input("Enter full path: ")
-                    if path.isfile(filterfile_input):
-                        pass
-                    else:
-                        print("No Such File Found.")
-                        continue
-                    with open(filterfile_input) as filterfile:
-                        for lines in filterfile:
-                            key_list.append(lines)
-                        break
-                elif filechoice.lower() == 'n':
-                    keyword_input = input(
-                        "Enter the keywords you'd like to search for, seperated by a comma: ").split(",")
-                    for k in keyword_input:
-                        key_list.append(k)
-                    break
-            break
-        else:
-            print("Invalid Input.")
-            continue
     while True:
         if arch_runs > 0:
             print("Runs: "+str(arch_runs))
@@ -219,9 +192,9 @@ def ArchiveSearch(stop):
                 sleep(5)
                 item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
                 unprocessed = item_soup.find('textarea') # Fetch the raw text in the paste.
-                for e in taglist:
-                    unprocessed = str(unprocessed).replace(e, "") # process the raw text by removing all html elements
-                if arch_mode == 'r':
+                for tag in taglist:
+                    unprocessed = str(unprocessed).replace(tag, "") # process the raw text by removing all html elements
+                if amode == 'r':
                     if path.isdir(workpath) is True:
                         if blacklisting is True:
                             flagged = False
@@ -276,7 +249,7 @@ def ArchiveSearch(stop):
                             arch_final_file.close()
                             arch_runs += 1
                             continue
-                elif arch_mode == 'f':
+                elif amode == 'f':
                     if path.isdir(workpath) is True:
                         print("Running engine... ["+str(datetime.now().strftime('%X'))+"]")
                         if blacklisting is True:
@@ -316,65 +289,148 @@ if __name__ == "__main__":
     [                                       ]
     [_______________________________________]
     """)
-
     while True:
-        workpath = input("Enter the path you wish to save text documents to (enter curdir for current directory): ")
-        if workpath.lower() == 'curdir':
-            workpath = curdir
-        if path.isdir(workpath):
-            print("Valid Path...")
-            if workpath.endswith('\\'):
-                pass
+        configchoice = input("Load config file? [y]/[n]: ")
+        if configchoice.lower() == 'y':
+            configpath = input('Enter the full path of the config file: ')
+            if path.isfile(configpath) is True:
+                parser.read(configpath, encoding='utf-8-sig')
+                workpath = parser.get('initial_vars', 'workpath')
+                stop_input = parser.get('initial_vars', 'stop_input')
+                print(f"stop_input: {stop_input} ({type(stop_input)})")
+                if stop_input == str('True'):
+                    stop_input = True
+                else:
+                    stop_input = int(stop_input)
+                limiter = int(parser.get('initial_vars', 'limiter'))
+                cooldown = int(parser.get('initial_vars', 'cooldown'))
+                blacklisting = parser.get('initial_vars', 'blacklisting')
+                blacklist = parser.get('initial_vars', 'blacklist')
+                key_list = parser.get('initial_vars', 'key_list')
+                arch_mode = parser.get('initial_vars', 'arch_mode')
+                print(f"paramter 'stop' type: {type(stop_input)}\nparameter 'arch_mode' type: {type(arch_mode)}")
+                ArchiveSearch(stop_input, arch_mode)
             else:
-                workpath = workpath + str('\\')
-            break
-        else:
-            print("Invalid path, check input...")
-            continue
-
-    while True:
-        try:
-            stopinput_input = input("Run in a constant loop? [y]/[n]: ")
-            if stopinput_input.lower() == 'y':
-                stop_input = True
-            elif stopinput_input.lower() == 'n':
-                stop_input = int(input("Enter the amount of successful pulls you wish to make (enter 0 for infinite): "))
-            limiter = int(input("Enter the request limit you wish to use (recommended: 5): "))
-            cooldown = int(input("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200): "))
-            break
-        except ValueError:
-            print("Invalid Input.")
-            continue
-
-    while True:
-        list_choice = input("Utilize blacklisting to avoid spam documents [y]/[n]: ")
-        if list_choice.lower() == 'y':
-            blacklisting = True
+                print("No such file found")
+                continue
+        elif configchoice.lower() == 'n':
+            while True:
+                workpath = input("Enter the path you wish to save text documents to (enter curdir for current directory): ")
+                if workpath.lower() == 'curdir':
+                    workpath = curdir
+                if path.isdir(workpath):
+                    print("Valid Path...")
+                    if workpath.endswith('\\'):
+                        pass
+                    else:
+                        workpath = workpath + str('\\')
+                    break
+                else:
+                    print("Invalid path, check input...")
+                    continue
 
             while True:
-                bfile_input = input("Read blacklisted terms from file? [y]/[n]: ")
-                if bfile_input.lower() == 'n':
-                    blacklist_input = input("Enter the phrases you wish to blacklist separated by a comma: ").split(",")
-                    for b in blacklist_input:
-                        blacklist.append(b)
+                try:
+                    stopinput_input = input("Run in a constant loop? [y]/[n]: ")
+                    if stopinput_input.lower() == 'y':
+                        stop_input = True
+                    elif stopinput_input.lower() == 'n':
+                        stop_input = int(input("Enter the amount of successful pulls you wish to make (enter 0 for infinite): "))
+                    limiter = int(input("Enter the request limit you wish to use (recommended: 5): "))
+                    cooldown = int(input("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200): "))
                     break
-                elif bfile_input.lower() == 'y':
-                    print("File should be structured with one term per line, with no comma.")
-                    bpath = input("Enter the full path of the file: ")
-                    if path.isfile(bpath) is True:
-                        print("Blacklist file detected...")
-                        with open(bpath) as bfile:
-                            for bline in bfile:
-                                blacklist.append(bline)
-                        break
-            break
+                except ValueError:
+                    print("Invalid Input.")
+                    continue
+
+            while True:
+                list_choice = input("Utilize blacklisting to avoid spam documents [y]/[n]: ")
+                if list_choice.lower() == 'y':
+                    blacklisting = True
+
+                    while True:
+                        bfile_input = input("Read blacklisted terms from file? [y]/[n]: ")
+                        if bfile_input.lower() == 'n':
+                            blacklist_input = input("Enter the phrases you wish to blacklist separated by a comma: ").split(",")
+                            for b in blacklist_input:
+                                blacklist.append(b)
+                            break
+                        elif bfile_input.lower() == 'y':
+                            print("File should be structured with one term per line, with no comma.")
+                            bpath = input("Enter the full path of the file: ")
+                            if path.isfile(bpath) is True:
+                                print("Blacklist file detected...")
+                                with open(bpath) as bfile:
+                                    for bline in bfile:
+                                        blacklist.append(bline)
+                                break
+                    break
 
 
-        elif list_choice.lower() == 'n':
-            blacklisting = False
-            break
+                elif list_choice.lower() == 'n':
+                    blacklisting = False
+                    break
+                else:
+                    print("invalid input.")
+                    continue
+
+            while True:
+                amode_input = input("[r]aw or [f]iltered search (filtered search will make use of the ArchiveEngine and will return fewer results): ")
+                if amode_input.lower() == 'r':
+                    arch_mode = 'r'
+                    break
+                elif amode_input.lower() == 'f':
+                    arch_mode = 'f'
+                    while True:
+                        filechoice = input("Load from file: [y]/[n]: ")
+                        if filechoice.lower() == 'y':
+                            filterfile_input = input("Enter full path: ")
+                            if path.isfile(filterfile_input):
+                                pass
+                            else:
+                                print("No Such File Found.")
+                                continue
+                            with open(filterfile_input) as filterfile:
+                                for lines in filterfile:
+                                    key_list.append(lines)
+                                break
+                        elif filechoice.lower() == 'n':
+                            keyword_input = input(
+                                "Enter the keywords you'd like to search for, seperated by a comma: ").split(",")
+                            for k in keyword_input:
+                                key_list.append(k)
+                            break
+                    break
+                else:
+                    print("Invalid Input.")
+                    continue
+
+            while True:
+                savechoice = input('Save configuration to file for repeated use? [y]/[n]: ')
+                if savechoice.lower() == 'n':
+                    break
+                elif savechoice.lower() == 'y':
+                    configname = input("Enter the config name (no extension): ")
+                    try:
+                        with open(configname + '.ini', 'w+') as cfile:
+                            cfile.write(
+f"""[initial_vars]
+workpath = {workpath}
+stop_input = {stop_input}
+limiter = {limiter}
+cooldown = {cooldown}
+blacklisting = {blacklisting}
+blacklist = {blacklist}
+key_list = {key_list}
+arch_mode = {arch_mode}""")
+                            break
+                    except Exception as e:
+                        print(f'Error: {e}')
+                        continue
+                else:
+                    print("Invalid Input")
+                    continue
+            ArchiveSearch(stop_input, arch_mode)
         else:
-            print("invalid input.")
+            print("Invalid Input")
             continue
-
-    ArchiveSearch(stop_input)
