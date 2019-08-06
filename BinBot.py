@@ -5,9 +5,8 @@ from time import sleep
 from datetime import datetime
 from bs4 import BeautifulSoup
 import codecs
-from os import getcwd, path, walk
+from os import getcwd, path
 from configparser import ConfigParser
-import yara
 
 # Author: Mili
 # Python Version: 3.6.0
