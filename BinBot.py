@@ -8,6 +8,7 @@ import codecs
 from os import getcwd, path
 from configparser import ConfigParser
 
+
 # Author: Mili
 # Python Version: 3.6.0
 # No API key needed
@@ -34,6 +35,8 @@ user_agents = [
 key_list = []
 
 blacklist = []
+
+reglist = []
 
 taglist = ['<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
            '<textarea class="paste_textarea" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)" rows="10">',
@@ -97,17 +100,27 @@ def archive_connect():
                 continue
 
 def archive_engine(prescan_text):
-    for k in key_list:
+    for k in  key_list:
         if k.lower() in prescan_text.lower():
             today = datetime.now().strftime('%x')
             now = datetime.now().strftime('%X')
             creationdate = today + '~' + now
-            keyfilename = "[Keyword-" + str(k) + "]" + str(creationdate).replace("/", ".").replace(":", "-")
-            keyfi = codecs.open(str(workpath)+str(keyfilename).replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
+            keyfilename = f"[Keyword- {k}]{creationdate}".replace("/", ".").replace(":", "-")
+            keyfi = codecs.open(f'{workpath}{keyfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
             keyfi.write(prescan_text)
             keyfi.close()
         else:
             pass
+    if reglisting is True:
+        for regex_pattern in reglist:
+            for match in re.findall(regex_pattern, prescan_text):
+                today = datetime.now().strftime('%x')
+                now = datetime.now().strftime('%X')
+                creationdate = today + '~' + now
+                regexfilename = f"[{pattern}]{creationdate}".replace("/", ".").replace(":", "-")
+                regfi = codecs.open(f'{workpath}{regexfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+','utf-8')
+                regfi.write(str(match))
+                regfi.close()
 
 def parameter_connect(proch):
     def print_connecterror():
@@ -296,7 +309,6 @@ if __name__ == "__main__":
                 parser.read(configpath, encoding='utf-8-sig')
                 workpath = parser.get('initial_vars', 'workpath')
                 stop_input = parser.get('initial_vars', 'stop_input')
-                print(f"stop_input: {stop_input} ({type(stop_input)})")
                 if stop_input == str('True'):
                     stop_input = True
                 else:
@@ -305,9 +317,14 @@ if __name__ == "__main__":
                 cooldown = int(parser.get('initial_vars', 'cooldown'))
                 blacklisting = parser.get('initial_vars', 'blacklisting')
                 blacklist = parser.get('initial_vars', 'blacklist')
+                reglisting = parser.get('initial_vars', 'reglisting')
+                if reglisting == str('True'):
+                    reglisting = True
+                else:
+                    reglisting = False
+                reglist = parser.get('initial_vars', 'reglist')
                 key_list = parser.get('initial_vars', 'key_list')
                 arch_mode = parser.get('initial_vars', 'arch_mode')
-                print(f"paramter 'stop' type: {type(stop_input)}\nparameter 'arch_mode' type: {type(arch_mode)}")
                 ArchiveSearch(stop_input, arch_mode)
             else:
                 print("No such file found")
@@ -399,6 +416,41 @@ if __name__ == "__main__":
                             for k in keyword_input:
                                 key_list.append(k)
                             break
+                        while True:
+                            regchoice = input("Run regex matching on documents? [y]/[n]: ")
+                            if regchoice not in ['y', 'n']:
+                                print("Invalid Input")
+                                continue
+                            elif regchoice.lower() == 'y':
+                                reglisting = True
+                                while True:
+                                    regfilechoice = input("Load from file (one pattern per line)? [y]/[n]: ")
+                                    if regfilechoice.lower() not in ['y', 'n']:
+                                        print("Invalid Input")
+                                        continue
+                                    elif regfilechoice.lower() == 'y':
+                                        while True:
+                                            regpath = input(
+                                                'Enter the full path (including extension) to the pattern file: ')
+                                            if path.isfile(regpath) is False:
+                                                print("No such file found.")
+                                                continue
+                                            else:
+                                                with open(regpath, 'r') as regfile:
+                                                    for line in regfile.readlines():
+                                                        reglist.append(line)
+                                                break
+                                    elif regfilechoice.lower() == 'n':
+                                        while True:
+                                            reginput = input(
+                                                "Enter the regex patterns separated by a comma AND a space: ").split(
+                                                ', ')
+                                            for pattern in reginput:
+                                                reglist.append(pattern)
+                                            break
+                                    break
+                            elif regchoice.lower() == 'n':
+                                break
                     break
                 else:
                     print("Invalid Input.")
@@ -420,6 +472,8 @@ limiter = {limiter}
 cooldown = {cooldown}
 blacklisting = {blacklisting}
 blacklist = {blacklist}
+reglisting = {reglisting}
+reglist = {reglist}
 key_list = {key_list}
 arch_mode = {arch_mode}""")
                             break
