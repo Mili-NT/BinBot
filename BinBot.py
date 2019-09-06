@@ -91,36 +91,40 @@ def archive_connect():
         except Exception as e:
             if e is requests.exceptions.ConnectionError:
                 print_connecterror()
-                continue
+                break
             elif e is requests.exceptions.Timeout:
                 print_timeouterror()
-                continue
+                break
             else:
                 print_genericerror()
-                continue
+                break
 
-def archive_engine(prescan_text):
-    for k in  key_list:
-        if k.lower() in prescan_text.lower():
-            today = datetime.now().strftime('%x')
-            now = datetime.now().strftime('%X')
-            creationdate = today + '~' + now
-            keyfilename = f"[Keyword- {k}]{creationdate}".replace("/", ".").replace(":", "-")
-            keyfi = codecs.open(f'{workpath}{keyfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
-            keyfi.write(prescan_text)
-            keyfi.close()
-        else:
-            pass
-    if reglisting is True:
-        for regex_pattern in reglist:
-            for match in re.findall(regex_pattern, prescan_text):
+def archive_engine(prescan_text, keylistingchoice, reglistingchoice):
+    if keylistingchoice is True:
+        for k in  key_list:
+            if k.lower() in prescan_text.lower():
                 today = datetime.now().strftime('%x')
                 now = datetime.now().strftime('%X')
                 creationdate = today + '~' + now
-                regexfilename = f"[{pattern}]{creationdate}".replace("/", ".").replace(":", "-")
-                regfi = codecs.open(f'{workpath}{regexfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+','utf-8')
-                regfi.write(str(match))
-                regfi.close()
+                keyfilename = f"[Keyword- {k}]{creationdate}".replace("/", ".").replace(":", "-")
+                keyfi = codecs.open(f'{workpath}{keyfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
+                keyfi.write(prescan_text)
+                keyfi.close()
+            else:
+                pass
+    if reglistingchoice is True:
+        count = 0
+        if reglisting is True:
+            for regex_pattern in reglist:
+                count += 1
+                for match in re.findall(regex_pattern, prescan_text):
+                    today = datetime.now().strftime('%x')
+                    now = datetime.now().strftime('%X')
+                    creationdate = today + '~' + now
+                    regexfilename = f"[Pattern [{str(count)}]]{creationdate}".replace("/", ".").replace(":", "-")
+                    regfi = codecs.open(f'{workpath}{regexfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+','utf-8')
+                    regfi.write(str(match))
+                    regfi.close()
 
 def parameter_connect(proch):
     def print_connecterror():
@@ -276,12 +280,12 @@ def ArchiveSearch(stop, amode):
                             if flagged is True:
                                 continue
                             else:
-                                archive_engine(unprocessed)
+                                archive_engine(unprocessed, keylisting, reglisting)
                                 arch_runs += 1
                                 continue
                         else:
                             print("Running engine... ["+str(datetime.now().strftime('%X'))+"]")
-                            archive_engine(unprocessed)
+                            archive_engine(unprocessed, keylisting, reglisting)
                             arch_runs += 1
                             continue
         else:
@@ -323,6 +327,11 @@ if __name__ == "__main__":
                 else:
                     reglisting = False
                 reglist = parser.get('initial_vars', 'reglist')
+                keylisting = parser.get('initial_vars', 'keylisting')
+                if keylisting == str('True'):
+                    keylisting = True
+                else:
+                    keylisting = False
                 key_list = parser.get('initial_vars', 'key_list')
                 arch_mode = parser.get('initial_vars', 'arch_mode')
                 ArchiveSearch(stop_input, arch_mode)
@@ -377,8 +386,8 @@ if __name__ == "__main__":
                             if path.isfile(bpath) is True:
                                 print("Blacklist file detected...")
                                 with open(bpath) as bfile:
-                                    for bline in bfile:
-                                        blacklist.append(bline)
+                                    for bline in bfile.readlines():
+                                        blacklist.append(bline.rstrip())
                                 break
                     break
 
@@ -397,60 +406,79 @@ if __name__ == "__main__":
                     break
                 elif amode_input.lower() == 'f':
                     arch_mode = 'f'
+
                     while True:
-                        filechoice = input("Load from file: [y]/[n]: ")
-                        if filechoice.lower() == 'y':
-                            filterfile_input = input("Enter full path: ")
-                            if path.isfile(filterfile_input):
-                                pass
-                            else:
-                                print("No Such File Found.")
-                                continue
-                            with open(filterfile_input) as filterfile:
-                                for lines in filterfile:
-                                    key_list.append(lines)
-                                break
-                        elif filechoice.lower() == 'n':
-                            keyword_input = input(
-                                "Enter the keywords you'd like to search for, seperated by a comma: ").split(",")
-                            for k in keyword_input:
-                                key_list.append(k)
-                            break
-                        while True:
-                            regchoice = input("Run regex matching on documents? [y]/[n]: ")
-                            if regchoice not in ['y', 'n']:
-                                print("Invalid Input")
-                                continue
-                            elif regchoice.lower() == 'y':
-                                reglisting = True
-                                while True:
-                                    regfilechoice = input("Load from file (one pattern per line)? [y]/[n]: ")
-                                    if regfilechoice.lower() not in ['y', 'n']:
-                                        print("Invalid Input")
+                        keychoice = input("Filter by keywords? [y]/[n]: ")
+                        if keychoice not in ['y','n']:
+                            print("Invalid Input")
+                            continue
+                        elif keychoice.lower() == 'y':
+                            keylisting = True
+                            while True:
+                                filechoice = input("Load from file: [y]/[n]: ")
+                                if filechoice.lower() == 'y':
+                                    filterfile_input = input("Enter full path of the file: ")
+                                    if path.isfile(filterfile_input):
+                                        print("keylist file detected...")
+                                        pass
+                                    else:
+                                        print("No Such File Found.")
                                         continue
-                                    elif regfilechoice.lower() == 'y':
-                                        while True:
-                                            regpath = input(
-                                                'Enter the full path (including extension) to the pattern file: ')
-                                            if path.isfile(regpath) is False:
-                                                print("No such file found.")
-                                                continue
-                                            else:
-                                                with open(regpath, 'r') as regfile:
-                                                    for line in regfile.readlines():
-                                                        reglist.append(line)
-                                                break
-                                    elif regfilechoice.lower() == 'n':
-                                        while True:
-                                            reginput = input(
-                                                "Enter the regex patterns separated by a comma AND a space: ").split(
-                                                ', ')
-                                            for pattern in reginput:
-                                                reglist.append(pattern)
+                                    with open(filterfile_input) as filterfile:
+                                        for lines in filterfile.readlines():
+                                            key_list.append(lines.rstrip())
+                                        break
+                                elif filechoice.lower() == 'n':
+                                    keyword_input = input(
+                                        "Enter the keywords you'd like to search for, seperated by a comma: ").split(",")
+                                    for k in keyword_input:
+                                        key_list.append(k)
+                                    break
+                            break
+                        elif keychoice.lower() == 'n':
+                            keylisting = False
+                            break
+                    while True:
+                        regchoice = input("Run regex matching on documents? [y]/[n]: ")
+                        if regchoice not in ['y', 'n']:
+                            print("Invalid Input")
+                            continue
+                        elif regchoice.lower() == 'y':
+                            reglisting = True
+                            while True:
+                                regfilechoice = input("Load from file (one pattern per line)? [y]/[n]: ")
+                                if regfilechoice.lower() not in ['y', 'n']:
+                                    print("Invalid Input")
+                                    continue
+                                elif regfilechoice.lower() == 'y':
+                                    while True:
+                                        regpath = input(
+                                            'Enter the full path (including extension) to the pattern file: ')
+                                        if path.isfile(regpath) is False:
+                                            print("No such file found.")
+                                            continue
+                                        else:
+                                            with open(regpath, 'r') as regfile:
+                                                for line in regfile.readlines():
+                                                    reglist.append(line.rstrip())
                                             break
                                     break
-                            elif regchoice.lower() == 'n':
+                                elif regfilechoice.lower() == 'n':
+                                    while True:
+                                        reginput = input(
+                                            "Enter the regex patterns separated by a comma AND a space: ").split(
+                                            ', ')
+                                        for pattern in reginput:
+                                            reglist.append(pattern)
+                                        break
                                 break
+                            break
+                        elif regchoice.lower() == 'n':
+                            reglisting = False
+                            break
+                    if keylisting is False and reglisting is False:
+                        print("Both filter modes were set to false, changing search mode to raw...")
+                        arch_mode = 'r'
                     break
                 else:
                     print("Invalid Input.")
@@ -474,6 +502,7 @@ blacklisting = {blacklisting}
 blacklist = {blacklist}
 reglisting = {reglisting}
 reglist = {reglist}
+keylisting = {keylisting}
 key_list = {key_list}
 arch_mode = {arch_mode}""")
                             break
