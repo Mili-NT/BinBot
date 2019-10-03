@@ -304,17 +304,9 @@ if __name__ == "__main__":
                 cooldown = int(parser.get('initial_vars', 'cooldown'))
                 blacklisting = parser.get('initial_vars', 'blacklisting')
                 blacklist = parser.get('initial_vars', 'blacklist')
-                reglisting = parser.get('initial_vars', 'reglisting')
-                if reglisting == str('True'):
-                    reglisting = True
-                else:
-                    reglisting = False
+                reglisting = parser.getboolean('initial_vars', 'reglisting')
                 reglist = parser.get('initial_vars', 'reglist')
-                keylisting = parser.get('initial_vars', 'keylisting')
-                if keylisting == str('True'):
-                    keylisting = True
-                else:
-                    keylisting = False
+                keylisting = parser.getboolean('initial_vars', 'keylisting')
                 key_list = parser.get('initial_vars', 'key_list')
                 arch_mode = parser.get('initial_vars', 'arch_mode')
                 ArchiveSearch(stop_input, arch_mode)
