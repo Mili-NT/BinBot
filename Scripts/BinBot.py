@@ -37,13 +37,10 @@ from configparser import ConfigParser
 # Variables, Setup, and Misc
 #
 parser = ConfigParser()
-
 curdir = syspath[0]
 
 key_list = []
-
 blacklist = []
-
 reglist = []
 
 taglist = ['<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
@@ -51,21 +48,15 @@ taglist = ['<textarea class="paste_code" id="paste_code" name="paste_code" onkey
            '</textarea>']
 
 archive_url = "https://pastebin.com/archive/text"
-
 scrape_url = "https://scrape.pastebin.com/api_scrape_item.php?i="
-
 url_foundation = "https://pastebin.com"
 
 ConnectError = "<title>Pastebin.com - Page Removed</title>"
-
 AccessDeniedError = "access denied"
-
-
 
 #
 # Functions
 #
-
 def archive_connect():
     def print_connecterror():
         lib.PrintError(f"""
