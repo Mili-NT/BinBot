@@ -86,7 +86,7 @@ def archive_connect():
 
     while True:
         try:
-            archive_page = requests.get(archive_url,headers=lib.random_headers())
+            archive_page = requests.get(archive_url,headers=lib.RandomHeaders())
             today = datetime.now().strftime('%x')
             now = datetime.now().strftime('%X')
             creationdate = today + '~' + now
@@ -152,7 +152,7 @@ def parameter_connect(proch):
     while True:
         full_arch_url = url_foundation + proch  # Generate URLs by adding the processed parameter to the base URL
         try:
-            full_archpage = requests.get(full_arch_url, headers=lib.random_headers())
+            full_archpage = requests.get(full_arch_url, headers=lib.RandomHeaders())
             return full_archpage, full_arch_url
         except Exception as e:
             if e is requests.exceptions.ConnectionError:

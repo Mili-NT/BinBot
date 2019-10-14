@@ -67,5 +67,5 @@ def PrintFatal(Msg):
 def DoNothing():
 	pass
 
-def random_headers():
+def RandomHeaders():
 	return { 'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
