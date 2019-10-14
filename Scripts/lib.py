@@ -55,7 +55,8 @@ def PrintFatal(Msg):
 def IsIPAddress(Address):
     try:
         socket.inet_aton(Address)
-        return True
+        if Address.count('.') == 3:
+            return True
     except socket.error:
         return False
 
