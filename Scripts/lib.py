@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -----------------------------------------------------------------------
 # A small python script to scrape the public pastebin archive.
 # Copyright (C) 2019  Mili
 #
@@ -13,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# -----------------------------------------------------------------------
 
 import os
 from random import choice
