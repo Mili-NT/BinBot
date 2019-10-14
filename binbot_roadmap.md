@@ -1,17 +1,21 @@
 # Project Overview
 https://github.com/Mili-NT/BinBot
+
 ## Project Details:
 - Name: **BinBot**
 - Category: **Data Collection & Analysis**
 - Creator: **Mili**
 - Maintainers: **None**
+
 ## Project Purpose:
 BinBot monitors the site pastebin for uploaded documents.
 It uses keyword matching, blacklisting, and regular expressions to analyze documents.
+
 ## Project Intent:
 BinBot is intended as a data collection and analysis program.
 Due to pastebin's popularity among hackers, BinBot was primarily intended to find and document malicious activity.
 However, due to the extreme flexibility offered by regular expression pattern matching, it can be used to collect any type of data.
+
 ## Current Features:
 - Multithreaded
 - Anti-Ban Capabilities (UA Switching, etc.)
@@ -24,5 +28,5 @@ However, due to the extreme flexibility offered by regular expression pattern ma
 
 ## Project Insights:
 - 11 Stars
-- 2 Forks
-- 64 Commits Across 1 Branch 
+- 3 Forks
+- 74 Commits Across 1 Branch

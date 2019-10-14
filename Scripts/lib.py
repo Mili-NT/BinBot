@@ -1,8 +1,28 @@
-import os
-from random import choice
-import requests
+#!/usr/bin/env python3
+# -----------------------------------------------------------------------
+# A small python script to scrape the public pastebin archive.
+# Copyright (C) 2019  Mili
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# -----------------------------------------------------------------------
 
-user_agents = [
+import os
+import socket
+import requests
+from random import choice
+
+UserAgents = [
 	'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
 	'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
 	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
@@ -16,37 +36,54 @@ user_agents = [
 ]
 
 def PrintSuccess(Msg):
-	if os.name == 'nt':
-		print('[+] ' + Msg)
-	else:
-		print('\033[1;32m[+]\033[1;m ' + Msg)
+    if os.name == 'nt':
+        print('[+] ' + Msg)
+    else:
+        print('\033[1;32m[+]\033[1;m ' + Msg)
 
 def PrintStatus(Msg):
-	if os.name == 'nt':
-		print('[*] ' + Msg)
-	else:
-		print('\033[1;34m[*]\033[1;m ' + Msg)
+    if os.name == 'nt':
+        print('[*] ' + Msg)
+    else:
+        print('\033[1;34m[*]\033[1;m ' + Msg)
 
 def PrintFailure(Msg):
-	if os.name == 'nt':
-		print('[-] ' + Msg)
-	else:
-		print('\033[1;31m[-]\033[1;m ' + Msg)
+    if os.name == 'nt':
+        print('[-] ' + Msg)
+    else:
+        print('\033[1;31m[-]\033[1;m ' + Msg)
 
 def PrintError(Msg):
-	if os.name == 'nt':
-		print('[!] ' + Msg)
-	else:
-		print('\033[1;31m[!]\033[1;m ' + Msg)
+    if os.name == 'nt':
+        print('[!] ' + Msg)
+    else:
+        print('\033[1;31m[!]\033[1;m ' + Msg)
 
 def PrintFatal(Msg):
-	if os.name == 'nt':
-		print('[$] ' + Msg)
-	else:
-		print('\033[1;33m[!]\033[1;m ' + Msg)
+    if os.name == 'nt':
+        print('[$] ' + Msg)
+    else:
+        print('\033[1;33m[!]\033[1;m ' + Msg)
 
-def DoNothing():
-	pass
+def IsIPAddress(Address):
+    try:
+        socket.inet_aton(Address)
+        if Address.count('.') == 3:
+            return True
+    except socket.error:
+        return False
 
-def random_headers():
-	return { 'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
+def ValidateIP(Address):
+    AddressChunks = Address.split('.')
+    if len(AddressChunks) != 4:
+        return False
+    for Chunk in AddressChunks:
+        if not Chunk.isdigit():
+            return False
+        ChunkInt = int(Chunk)
+        if ChunkInt < 0 or ChunkInt > 255:
+            return False
+    return True
+
+def RandomHeaders():
+    return { 'User-Agent': choice(UserAgents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
