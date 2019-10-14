@@ -64,8 +64,5 @@ def PrintFatal(Msg):
 	else:
 		print('\033[1;33m[!]\033[1;m ' + Msg)
 
-def DoNothing():
-	pass
-
 def RandomHeaders():
 	return { 'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
