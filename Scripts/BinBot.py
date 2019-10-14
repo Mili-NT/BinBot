@@ -43,9 +43,11 @@ key_list = []
 blacklist = []
 reglist = []
 
-taglist = ['<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
-           '<textarea class="paste_textarea" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)" rows="10">',
-           '</textarea>']
+taglist = [
+    '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)">',
+    '<textarea class="paste_textarea" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)" rows="10">',
+    '</textarea>'
+]
 
 archive_url = "https://pastebin.com/archive/text"
 scrape_url = "https://scrape.pastebin.com/api_scrape_item.php?i="
