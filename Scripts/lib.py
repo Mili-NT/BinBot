@@ -18,8 +18,9 @@
 # -----------------------------------------------------------------------
 
 import os
-from random import choice
+import socket
 import requests
+from random import choice
 
 def PrintSuccess(Msg):
     if os.name == 'nt':
@@ -50,6 +51,13 @@ def PrintFatal(Msg):
         print('[$] ' + Msg)
     else:
         print('\033[1;33m[!]\033[1;m ' + Msg)
+
+def IsIPAddress(Address):
+    try:
+        socket.inet_aton(Address)
+        return True
+    except socket.error:
+        return False
 
 def RandomHeaders():
     return { 'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
