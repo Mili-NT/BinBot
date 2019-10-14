@@ -60,5 +60,17 @@ def IsIPAddress(Address):
     except socket.error:
         return False
 
+def ValidateIP(Address):
+    AddressChunks = Address.split('.')
+    if len(AddressChunks) != 4:
+        return False
+    for Chunk in AddressChunks:
+        if not Chunk.isdigit():
+            return False
+        ChunkInt = int(Chunk)
+        if ChunkInt < 0 or ChunkInt > 255:
+            return False
+    return True
+
 def RandomHeaders():
     return { 'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
