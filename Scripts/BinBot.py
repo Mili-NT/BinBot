@@ -162,29 +162,29 @@ def ArchiveSearch(stop, amode):
     arch_runs = 0
     while True:
         if arch_runs > 0:
-            lib.PrintStatus("Runs: "+str(arch_runs))
+            lib.PrintStatus("Runs: " + str(arch_runs))
             if arch_runs >= stop and stop is False:
                 lib.PrintSuccess("Runs Complete, Operation Finished... [" + str(datetime.now().strftime('%X')) + "]")
                 exit()
             else:
-                lib.PrintStatus("Pastes fetched, cooling down for "+str(cooldown)+" seconds... ["+str(datetime.now().strftime('%X'))+"]")
+                lib.PrintStatus("Pastes fetched, cooling down for " + str(cooldown) + " seconds... [" + str(datetime.now().strftime('%X')) + "]")
                 sleep(cooldown/2)
-                lib.PrintStatus("Halfway through at ["+str(datetime.now().strftime('%X'))+"]")
+                lib.PrintStatus("Halfway through at [" + str(datetime.now().strftime('%X')) + "]")
                 sleep(cooldown/2)
-                lib.PrintStatus("resuming... ["+str(datetime.now().strftime('%X'))+"]")
+                lib.PrintStatus("resuming... [" + str(datetime.now().strftime('%X')) + "]")
         if arch_runs < stop or stop is True:
             arch_page, arch_filename = archive_connect()
             arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
             sleep(2)
-            lib.PrintStatus("Getting archived pastes... ["+str(datetime.now().strftime('%X'))+"]")
+            lib.PrintStatus("Getting archived pastes... [" + str(datetime.now().strftime('%X')) + "]")
             if AccessDeniedError in arch_page.text:
-                lib.PrintError("IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour... ["+str(datetime.now().strftime('%X'))+"]")
+                lib.PrintError("IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour... [" + str(datetime.now().strftime('%X')) + "]")
                 sleep(cooldown)
-                lib.PrintStatus("Process resumed... ["+str(datetime.now().strftime('%X'))+"]")
+                lib.PrintStatus("Process resumed... [" + str(datetime.now().strftime('%X')) + "]")
                 continue
             else:
                 pass
-            lib.PrintStatus("Finding params... ["+str(datetime.now().strftime('%X'))+"]")
+            lib.PrintStatus("Finding params... [" + str(datetime.now().strftime('%X')) + "]")
 
 
             table = arch_soup.find("table", class_="maintable") # Fetch the table of recent pastes
@@ -193,15 +193,15 @@ def ArchiveSearch(stop, amode):
                     tablehrefs = table.findAll('a', href=True) # Find the <a> tags for every paste
                     break
                 except AttributeError:
-                    lib.PrintError("IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour... ["+str(datetime.now().strftime('%X'))+"]")
+                    lib.PrintError("IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour... [" + str(datetime.now().strftime('%X')) + "]")
                     sleep(cooldown)
-                    lib.PrinrError("Process resumed... ["+str(datetime.now().strftime('%X'))+"]")
+                    lib.PrinrError("Process resumed... [" + str(datetime.now().strftime('%X')) + "]")
                     continue
 
             for h in tablehrefs:
                 proch = h['href'] # fetch the URL param for each paste
-                lib.PrintSuccess("params fetched... ["+str(datetime.now().strftime('%X'))+"]")
-                lib.PrintStatus("Acting on param "+str(proch)+"... ["+str(datetime.now().strftime('%X'))+"]")
+                lib.PrintSuccess("params fetched... [" + str(datetime.now().strftime('%X')) + "]")
+                lib.PrintStatus("Acting on param " + str(proch) + "... [" + str(datetime.now().strftime('%X')) + "]")
                 full_archpage, full_arch_url = parameter_connect(proch)
                 sleep(5)
                 item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
@@ -222,21 +222,19 @@ def ArchiveSearch(stop, amode):
                             if flagged is True:
                                 continue
                             else:
-                                arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
-                                                              .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
+                                arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
                                 arch_final_file.write(unprocessed)
                                 arch_final_file.close()
                                 arch_runs += 1
                                 continue
                         elif blacklisting is False:
-                            arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
-                                                          .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
+                            arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
                             arch_final_file.write(unprocessed)
                             arch_final_file.close()
                             arch_runs += 1
                             continue
                     else:
-                        lib.PrintStatus("Making directory... ["+str(datetime.now().strftime('%X'))+"]")
+                        lib.PrintStatus("Making directory... [" + str(datetime.now().strftime('%X')) + "]")
                         if blacklisting is True:
                             flagged = False
                             compare_text = re.sub(r'\s+', '', unprocessed)  # strip all whitespace for comparison
@@ -249,23 +247,20 @@ def ArchiveSearch(stop, amode):
                             if flagged is True:
                                 continue
                             else:
-                                arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
-                                                              .replace(":", "-").replace("/", "-") + ".txt", 'w+',
-                                                              'utf-8')
+                                arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+','utf-8')
                                 arch_final_file.write(unprocessed)
                                 arch_final_file.close()
                                 arch_runs += 1
                                 continue
                         elif blacklisting is False:
-                            arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-")
-                                                          .replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
+                            arch_final_file = codecs.open(str(workpath) + str(full_arch_url).replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
                             arch_final_file.write(unprocessed)
                             arch_final_file.close()
                             arch_runs += 1
                             continue
                 elif amode == 'f':
                     if path.isdir(workpath) is True:
-                        lib.PrintStatus("Running engine... ["+str(datetime.now().strftime('%X'))+"]")
+                        lib.PrintStatus("Running engine... [" + str(datetime.now().strftime('%X')) + "]")
                         if blacklisting is True:
                             flagged = False
                             compare_text = re.sub(r'\s+', '', unprocessed)  # strip all whitespace for comparison
@@ -282,12 +277,12 @@ def ArchiveSearch(stop, amode):
                                 arch_runs += 1
                                 continue
                         else:
-                            lib.PrintStatus("Running engine... ["+str(datetime.now().strftime('%X'))+"]")
+                            lib.PrintStatus("Running engine... [" + str(datetime.now().strftime('%X')) + "]")
                             archive_engine(unprocessed, keylisting, reglisting)
                             arch_runs += 1
                             continue
         else:
-            lib.PrintSuccess("Operation Finished... ["+str(datetime.now().strftime('%X'))+"]")
+            lib.PrintSuccess("Operation Finished... [" + str(datetime.now().strftime('%X')) + "]")
             break
 
 if __name__ == "__main__":
@@ -295,8 +290,8 @@ if __name__ == "__main__":
     _________________________________________
     [                                       ]
     [                                       ]
-    [          Welcome to BinBot            ]
-    [            Made by Mili               ]
+    [           Welcome to BinBot           ]
+    [            Made by Mili-NT            ]
     [                                       ]
     [_______________________________________]
     """)
@@ -396,7 +391,7 @@ if __name__ == "__main__":
 
                     while True:
                         keychoice = input("Filter by keywords? [y]/[n]: ")
-                        if keychoice not in ['y','n']:
+                        if keychoice not in ['y', 'n']:
                             lib.PrintError("Invalid Input")
                             continue
                         elif keychoice.lower() == 'y':
@@ -452,9 +447,7 @@ if __name__ == "__main__":
                                     break
                                 elif regfilechoice.lower() == 'n':
                                     while True:
-                                        reginput = input(
-                                            "Enter the regex patterns separated by a comma AND a space: ").split(
-                                            ', ')
+                                        reginput = input("Enter the regex patterns separated by a comma AND a space: ").split(', ')
                                         for pattern in reginput:
                                             reglist.append(pattern)
                                         break
