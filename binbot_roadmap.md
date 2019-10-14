@@ -28,5 +28,5 @@ However, due to the extreme flexibility offered by regular expression pattern ma
 
 ## Project Insights:
 - 11 Stars
-- 2 Forks
-- 64 Commits Across 1 Branch
+- 3 Forks
+- 74 Commits Across 1 Branch
