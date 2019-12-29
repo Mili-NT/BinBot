@@ -32,9 +32,7 @@ from configparser import ConfigParser
 # Python Version: 3.6.0
 # No API key needed
 
-#
 # Functions
-#
 def archive_connect():
     archive_url = "https://pastebin.com/archive/text"
     def print_connecterror():
