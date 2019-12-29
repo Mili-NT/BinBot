@@ -262,8 +262,14 @@ def manual_setup():
             elif stopinput_input.lower() == 'n':
                 stop_input = int(lib.PrintQuestion("Enter the amount of successful pulls you wish to make (enter 0 for infinite)"))
             # Limiter and Cooldown
-            limiter = int(lib.PrintQuestion("Enter the request limit you wish to use (recommended: 5)"))
-            cooldown = int(lib.PrintQuestion("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
+            try:
+                limiter = int(lib.PrintQuestion("Enter the request limit you wish to use (recommended: 5)"))
+            except:
+                limiter = 5
+            try:
+                cooldown = int(lib.PrintQuestion("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
+            except:
+                cooldown = 1200
             break
         except ValueError:
             lib.PrintError("Invalid Input.")
