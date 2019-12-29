@@ -159,9 +159,9 @@ def ArchiveSearch(vars_dict):
                 unprocessed = item_soup.find('textarea') # Fetch the raw text in the paste.
                 taglist = [
                     '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
-                    '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)">',
-                    '<textarea class="paste_textarea" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)" rows="10">',
-                    '</textarea>', '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)">',
+                    '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
+                    '<textarea class="paste_textarea" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)" rows="10">',
+                    '</textarea>', '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
                 ]
                 for tag in taglist:
                     unprocessed = str(unprocessed).replace(tag, "") # process the raw text by removing html tags
