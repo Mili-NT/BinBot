@@ -22,3 +22,10 @@ import json
 import requests
 
 api_url = 'https://pastebin.com/api/api_raw.php'
+
+# Get API key
+try:
+    api_file = open("api.key", "r")
+    api_key = str(api_file.readline()).rstrip() # TODO: Check if API key is valid
+finally:
+    api_file.close()
