@@ -17,15 +17,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------
 
-from os import listdir, getcwd, remove
+import lib
 from os.path import isfile, join
+from os import listdir, getcwd, remove
 
 curdir = getcwd()
 ic = 0
 
 print("Files generated through the raw search will begin in 'https', filtered files will begin in '['")
-user_input = input("[a] to remove '[' files, [b] to remove 'https' files: ")
-dirinput = input("Enter the path you wish to save text documents to (enter curdir for current directory): ")
+user_input = lib.PrintQuestion("[a] to remove '[' files, [b] to remove 'https' files")
+dirinput = lib.PrintQuestion("Enter the path you wish to save text documents to (enter curdir for current directory)")
 
 if dirinput.endswith('\\'):
     pass
