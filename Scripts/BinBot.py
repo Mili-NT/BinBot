@@ -69,7 +69,7 @@ def archive_engine(prescan_text, vars_dict):
             if k.lower() in prescan_text.lower():
                 today = datetime.now().strftime('%x')
                 now = datetime.now().strftime('%X')
-                creationdate = today + '~' + now
+                creationdate = f"{today}~{now}"
                 keyfilename = f"[Keyword- {k}]{creationdate}".replace("/", ".").replace(":", "-")
                 keyfi = codecs.open(f'{vars_dict["workpath"]}{keyfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
                 keyfi.write(prescan_text)
@@ -83,7 +83,7 @@ def archive_engine(prescan_text, vars_dict):
             for match in re.findall(regex_pattern, prescan_text):
                 today = datetime.now().strftime('%x')
                 now = datetime.now().strftime('%X')
-                creationdate = today + '~' + now
+                creationdate = f"{today}~{now}"
                 regexfilename = f"[Pattern [{str(count)}]]{creationdate}".replace("/", ".").replace(":", "-")
                 regfi = codecs.open(f'{vars_dict["workpath"]}{regexfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+','utf-8')
                 regfi.write(str(match))
@@ -118,43 +118,43 @@ def ArchiveSearch(vars_dict):
     arch_runs = 0
     while True:
         if arch_runs > 0:
-            lib.PrintStatus("Runs: " + str(arch_runs))
+            lib.PrintStatus(f"Runs: {arch_runs}")
             if arch_runs >= vars_dict['stop_input'] and vars_dict['stop_input'] is False:
-                lib.PrintSuccess("Runs Complete, Operation Finished... [" + str(datetime.now().strftime('%X')) + "]")
+                lib.PrintSuccess(f"Runs Complete, Operation Finished... [{datetime.now().strftime('%X')}]")
                 exit()
             else:
-                lib.PrintStatus("Pastes fetched, cooling down for " + str(vars_dict['cooldown']) + " seconds... [" + str(datetime.now().strftime('%X')) + "]")
+                lib.PrintStatus(f"Pastes fetched, cooling down for {vars_dict['cooldown']} seconds... [{datetime.now().strftime('%X')}]")
                 sleep(vars_dict['cooldown']/2)
-                lib.PrintStatus("Halfway through at [" + str(datetime.now().strftime('%X')) + "]")
+                lib.PrintStatus(f"Halfway through at [{datetime.now().strftime('%X')}]")
                 sleep(vars_dict['cooldown']/2)
-                lib.PrintStatus("resuming... [" + str(datetime.now().strftime('%X')) + "]")
+                lib.PrintStatus(f"resuming... [{datetime.now().strftime('%X')}]")
         if arch_runs < vars_dict['stop_input'] or vars_dict['stop_input'] is True:
             arch_page, arch_filename = archive_connect()
             arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
             sleep(2)
-            lib.PrintStatus("Getting archived pastes... [" + str(datetime.now().strftime('%X')) + "]")
+            lib.PrintStatus(f"Getting archived pastes... [{datetime.now().strftime('%X')}]")
             if 'access denied' in arch_page.text:
-                lib.PrintError("IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour... [" + str(datetime.now().strftime('%X')) + "]")
+                lib.PrintError(f"IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour... [{datetime.now().strftime('%X')}]")
                 sleep(vars_dict['cooldown'])
-                lib.PrintStatus("Process resumed... [" + str(datetime.now().strftime('%X')) + "]")
+                lib.PrintStatus(f"Process resumed... [{datetime.now().strftime('%X')}]")
                 continue
             else:
                 pass
-            lib.PrintStatus("Finding params... [" + str(datetime.now().strftime('%X')) + "]")
+            lib.PrintStatus(f"Finding params...[{datetime.now().strftime('%X')}]")
             table = arch_soup.find("table", class_="maintable") # Fetch the table of recent pastes
             while True:
                 try:
                     tablehrefs = table.findAll('a', href=True) # Find the <a> tags for every paste
                     break
                 except AttributeError:
-                    lib.PrintError("IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour... [" + str(datetime.now().strftime('%X')) + "]")
+                    lib.PrintError(f"IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour... [{datetime.now().strftime('%X')}]")
                     sleep(vars_dict['cooldown'])
-                    lib.PrintError("Process resumed... [" + str(datetime.now().strftime('%X')) + "]")
+                    lib.PrintError(f"Process resumed... [{datetime.now().strftime('%X')}]")
                     continue
             for h in tablehrefs:
                 proch = h['href'] # fetch the URL param for each paste
                 lib.PrintSuccess("params fetched... [" + str(datetime.now().strftime('%X')) + "]")
-                lib.PrintStatus("Acting on param " + str(proch) + "... [" + str(datetime.now().strftime('%X')) + "]")
+                lib.PrintStatus(f"Acting on param {proch}... [{datetime.now().strftime('%X')}]")
                 full_archpage, full_arch_url = parameter_connect(proch)
                 sleep(5)
                 item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
@@ -184,7 +184,7 @@ def ArchiveSearch(vars_dict):
                     continue
                 elif vars_dict['arch_mode'] == 'f':
                     if path.isdir(vars_dict['workpath']) is True:
-                        lib.PrintStatus("Running engine... [" + str(datetime.now().strftime('%X')) + "]")
+                        lib.PrintStatus(f"Running engine... [{datetime.now().strftime('%X')}]")
                         if vars_dict['blacklisting'] is True:
                             flagged = False
                             compare_text = re.sub(r'\s+', '', unprocessed)  # strip all whitespace for comparison
@@ -195,12 +195,12 @@ def ArchiveSearch(vars_dict):
                                     flagged = True
                             if flagged is True:
                                 continue
-                        lib.PrintStatus("Running engine... [" + str(datetime.now().strftime('%X')) + "]")
+                        lib.PrintStatus(f"Running engine... [{datetime.now().strftime('%X')}]")
                         archive_engine(unprocessed, vars_dict)
                         arch_runs += 1
                         continue
         else:
-            lib.PrintSuccess("Operation Finished... [" + str(datetime.now().strftime('%X')) + "]")
+            lib.PrintSuccess(f"Operation Finished... [{datetime.now().strftime('%X')}]")
             break
 
 def manual_setup():
