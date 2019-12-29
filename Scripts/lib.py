@@ -59,12 +59,6 @@ def PrintError(Msg):
     else:
         print('\033[1;31m[!]\033[1;m ' + Msg)
 
-def PrintFatal(Msg):
-    if os.name == 'nt':
-        print('[$] ' + Msg)
-    else:
-        print('\033[1;33m[!]\033[1;m ' + Msg)
-
 def IsIPAddress(Address):
     try:
         socket.inet_aton(Address)
