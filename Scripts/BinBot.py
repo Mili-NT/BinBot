@@ -21,7 +21,7 @@ import re
 import lib
 import codecs
 import requests
-from os import path
+from os import path, name, getcwd
 from time import sleep
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -56,7 +56,7 @@ def archive_connect():
 
     while True:
         try:
-            archive_page = requests.get(archive_url,headers=lib.RandomHeaders())
+            archive_page = requests.get(archive_url, headers=lib.RandomHeaders())
             today = datetime.now().strftime('%x')
             now = datetime.now().strftime('%X')
             creationdate = today + '~' + now
@@ -235,7 +235,10 @@ def manual_setup():
     while True:
         workpath = input("Enter the path you wish to save text documents to (enter curdir for current directory): ")
         if workpath.lower() == 'curdir':
-            workpath = syspath[0]
+            if os.name.lower() == 'nt':
+                workpath = getcwd()
+            else:
+                workpath = syspath[0]
         if path.isdir(workpath):
             lib.PrintSuccess("Valid Path...")
             if workpath.endswith('\\'):
@@ -301,7 +304,9 @@ def manual_setup():
         if amode_input.lower() == 'r':
             arch_mode = 'r'
             keylisting = False
+            key_list = []
             reglisting = False
+            reglist = []
             break
         elif amode_input.lower() == 'f':
             arch_mode = 'f'
@@ -317,6 +322,7 @@ def manual_setup():
                 reglisting = True
             else:
                 reglisting = False
+                reglist = []
             if keylisting is False and reglisting is False:
                 arch_mode = 'r'
             break

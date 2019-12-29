@@ -59,11 +59,11 @@ def PrintError(Msg):
     else:
         print('\033[1;31m[!]\033[1;m ' + Msg)
 
-def PrintFatal(Msg):
+def PrintQuestion(Msg):
     if os.name == 'nt':
-        print('[$] ' + Msg)
+        return input('[?] ' + Msg + ": ")
     else:
-        print('\033[1;33m[!]\033[1;m ' + Msg)
+        return input('\033[1;33m[?]\033[1;m ' + Msg + ": ")
 
 def IsIPAddress(Address):
     try:
