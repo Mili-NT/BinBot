@@ -204,7 +204,7 @@ def ArchiveSearch(vars_dict):
 def manual_setup():
     # Save path
     while True:
-        workpath = lib.PrintQuestion("Enter the path you wish to save text documents to (enter curdir for current directory)")
+        workpath = lib.PrintInput("Enter the path you wish to save text documents to (enter curdir for current directory)")
         if workpath.lower() == 'curdir':
             if os.name.lower() == 'nt':
                 workpath = getcwd()
@@ -223,15 +223,15 @@ def manual_setup():
     # Looping
     while True:
         try:
-            stopinput_input = lib.PrintQuestion("Run in a constant loop? [y]/[n]")
+            stopinput_input = lib.PrintInput("Run in a constant loop? [y]/[n]")
             if stopinput_input.lower() == 'y':
                 stop_input = True
             elif stopinput_input.lower() == 'n':
-                stop_input = int(lib.PrintQuestion("Enter the amount of successful pulls you wish to make (enter 0 for infinite)"))
+                stop_input = int(lib.PrintInput("Enter the amount of successful pulls you wish to make (enter 0 for infinite)"))
             # Limiter and Cooldown
-            try: limiter = int(lib.PrintQuestion("Enter the request limit you wish to use (recommended: 5)"))
+            try: limiter = int(lib.PrintInput("Enter the request limit you wish to use (recommended: 5)"))
             except: limiter = 5
-            try: cooldown = int(lib.PrintQuestion("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
+            try: cooldown = int(lib.PrintInput("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
             except: cooldown = 1200
             break
         except ValueError:
@@ -240,19 +240,19 @@ def manual_setup():
     # Blacklisting
     while True:
         blacklist = []
-        list_choice = lib.PrintQuestion("Utilize blacklisting to avoid spam documents [y]/[n]")
+        list_choice = lib.PrintInput("Utilize blacklisting to avoid spam documents [y]/[n]")
         if list_choice.lower() == 'y':
             blacklisting = True
             while True:
-                bfile_input = lib.PrintQuestion("Read blacklisted terms from file? [y]/[n]")
+                bfile_input = lib.PrintInput("Read blacklisted terms from file? [y]/[n]")
                 if bfile_input.lower() == 'n':
-                    blacklist_input = lib.PrintQuestion("Enter the phrases you wish to blacklist separated by a comma").split(",")
+                    blacklist_input = lib.PrintInput("Enter the phrases you wish to blacklist separated by a comma").split(",")
                     for b in blacklist_input:
                         blacklist.append(b)
                     break
                 elif bfile_input.lower() == 'y':
                     lib.PrintStatus("File should be structured with one term per line, with no comma.")
-                    bpath = lib.PrintQuestion("Enter the full path of the file")
+                    bpath = lib.PrintInput("Enter the full path of the file")
                     if path.isfile(bpath) is True:
                         print("Blacklist file detected...")
                         with open(bpath) as bfile:
@@ -269,7 +269,7 @@ def manual_setup():
     # Filtering
     while True:
         reglist = []
-        amode_input = lib.PrintQuestion("[r]aw or [f]iltered search (filtered search will make use of the ArchiveEngine and will return fewer results)")
+        amode_input = lib.PrintInput("[r]aw or [f]iltered search (filtered search will make use of the ArchiveEngine and will return fewer results)")
         if amode_input.lower() == 'r':
             arch_mode = 'r'
             keylisting = False
@@ -279,13 +279,13 @@ def manual_setup():
             break
         elif amode_input.lower() == 'f':
             arch_mode = 'f'
-            keychoice = lib.PrintQuestion("Enable keyword filtering [True]/[False]")
+            keychoice = lib.PrintInput("Enable keyword filtering [True]/[False]")
             if keychoice.lower() in ['true', 't']:
                 keylisting = True
             else:
                 keylisting = False
                 key_list = []
-            regchoice = lib.PrintQuestion("Enable regular expression filtering [True]/[False]")
+            regchoice = lib.PrintInput("Enable regular expression filtering [True]/[False]")
             if regchoice.lower() in ['true', 't']:
                 reglisting = True
             else:
@@ -297,9 +297,9 @@ def manual_setup():
     # Filtering Input
     if keylisting is True:
         while True:
-            filechoice = lib.PrintQuestion("Load keywords from file: [y]/[n]")
+            filechoice = lib.PrintInput("Load keywords from file: [y]/[n]")
             if filechoice.lower() == 'y':
-                filterfile_input = lib.PrintQuestion("Enter full path of the file")
+                filterfile_input = lib.PrintInput("Enter full path of the file")
                 if path.isfile(filterfile_input):
                     lib.PrintSuccess("keylist file detected...")
                     pass
@@ -311,19 +311,19 @@ def manual_setup():
                         key_list.append(lines.rstrip())
                     break
             elif filechoice.lower() == 'n':
-                keyword_input = lib.PrintQuestion("Enter the keywords you'd like to search for, seperated by a comma").split(",")
+                keyword_input = lib.PrintInput("Enter the keywords you'd like to search for, seperated by a comma").split(",")
                 for k in keyword_input:
                     key_list.append(k)
                 break
     if reglisting is True:
         while True:
-            regfilechoice = lib.PrintQuestion("Load regex from file (one pattern per line)? [y]/[n]")
+            regfilechoice = lib.PrintInput("Load regex from file (one pattern per line)? [y]/[n]")
             if regfilechoice.lower() not in ['y', 'n']:
                 lib.PrintError("Invalid Input")
                 continue
             elif regfilechoice.lower() == 'y':
                 while True:
-                    regpath = lib.PrintQuestion('Enter the full path (including extension) to the pattern file')
+                    regpath = lib.PrintInput('Enter the full path (including extension) to the pattern file')
                     if path.isfile(regpath) is False:
                         lib.PrintError("No such file found.")
                         continue
@@ -335,11 +335,11 @@ def manual_setup():
                 break
     # Saving
     while True:
-        savechoice = lib.PrintQuestion('Save configuration to file for repeated use? [y]/[n]')
+        savechoice = lib.PrintInput('Save configuration to file for repeated use? [y]/[n]')
         if savechoice.lower() == 'n':
             break
         elif savechoice.lower() == 'y':
-            configname = lib.PrintQuestion("Enter the config name (no extension)")
+            configname = lib.PrintInput("Enter the config name (no extension)")
             try:
                 with open(configname + '.ini', 'w+') as cfile:
                     cfile.write(
@@ -377,7 +377,7 @@ arch_mode = {arch_mode}""")
 def load_config():
     parser = ConfigParser()
     while True:
-        configpath = lib.PrintQuestion('Enter the full path of the config file')
+        configpath = lib.PrintInput('Enter the full path of the config file')
         if path.isfile(configpath) is True:
             parser.read(configpath, encoding='utf-8-sig')
             workpath = parser.get('initial_vars', 'workpath')
@@ -426,7 +426,7 @@ def main():
     [_______________________________________]
     """)
     while True:
-        configchoice = lib.PrintQuestion("Load config file? [y]/[n]")
+        configchoice = lib.PrintInput("Load config file? [y]/[n]")
         if configchoice.lower() == 'y':
             vars_dict = load_config()
         elif configchoice.lower() in ['no', 'n']:

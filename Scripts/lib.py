@@ -59,7 +59,7 @@ def PrintError(Msg):
     else:
         print('\033[1;31m[!]\033[1;m ' + Msg)
 
-def PrintQuestion(Msg):
+def PrintInput(Msg):
     if os.name == 'nt':
         return input('[?] ' + Msg + ": ")
     else:
