@@ -63,7 +63,7 @@ def PrintQuestion(Msg):
     if os.name == 'nt':
         return input('[?] ' + Msg + ": ")
     else:
-        return input('\033[1;33m[?]\033[1;m ' + Msg + ": ")
+        return input('\033[1;33m[*]\033[1;m ' + Msg + ": ")
 
 def IsIPAddress(Address):
     try:
