@@ -158,7 +158,7 @@ def ArchiveSearch(vars_dict):
                 item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
                 unprocessed = item_soup.find('textarea') # Fetch the raw text in the paste.
                 taglist = [
-                    '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)">',
+                    '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
                     '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)">',
                     '<textarea class="paste_textarea" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)" rows="10">',
                     '</textarea>', '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)">',
