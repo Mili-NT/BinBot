@@ -73,6 +73,7 @@ def archive_connect():
             else:
                 print_genericerror()
                 break
+
 def archive_engine(prescan_text, vars_dict):
     if vars_dict['keylisting'] is True:
         for k in vars_dict['key_list']:
@@ -98,6 +99,7 @@ def archive_engine(prescan_text, vars_dict):
                 regfi = codecs.open(f'{vars_dict["workpath"]}{regexfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+','utf-8')
                 regfi.write(str(match))
                 regfi.close()
+
 def parameter_connect(proch):
     archive_url = "https://pastebin.com/archive/text"
     def print_connecterror():
@@ -133,6 +135,7 @@ def parameter_connect(proch):
             else:
                 print_genericerror()
                 continue
+
 def ArchiveSearch(vars_dict):
     arch_runs = 0
     while True:
@@ -185,7 +188,7 @@ def ArchiveSearch(vars_dict):
                     '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)">',
                     '<textarea class="paste_textarea" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)" rows="10">',
                     '</textarea>', '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
-                    
+
                 ]
                 for tag in taglist:
                     unprocessed = str(unprocessed).replace(tag, "") # process the raw text by removing html tags
@@ -230,6 +233,7 @@ def ArchiveSearch(vars_dict):
         else:
             lib.PrintSuccess("Operation Finished... [" + str(datetime.now().strftime('%X')) + "]")
             break
+
 def manual_setup():
     # Save path
     while True:
@@ -398,6 +402,7 @@ arch_mode = {arch_mode}""")
                  'keylisting': keylisting, 'key_list': key_list, 'arch_mode': arch_mode}
 
     return vars_dict
+
 def load_config():
     parser = ConfigParser()
     while True:
@@ -428,9 +433,8 @@ def load_config():
                  'keylisting': keylisting, 'key_list': key_list, 'arch_mode': arch_mode}
 
     return vars_dict
-#
+
 # Main
-#
 def main():
     print("""
     _________________________________________
@@ -447,7 +451,7 @@ def main():
             vars_dict = load_config()
         elif configchoice.lower() in ['no', 'n']:
             vars_dict = manual_setup()
-
         ArchiveSearch(vars_dict)
+
 if __name__ == "__main__":
     main()
