@@ -56,7 +56,7 @@ def archive_connect():
 
     while True:
         try:
-            archive_page = requests.get(archive_url,headers=lib.RandomHeaders())
+            archive_page = requests.get(archive_url, headers=lib.RandomHeaders())
             today = datetime.now().strftime('%x')
             now = datetime.now().strftime('%X')
             creationdate = today + '~' + now
