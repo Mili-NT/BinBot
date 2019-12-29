@@ -38,22 +38,11 @@ from configparser import ConfigParser
 def archive_connect():
     archive_url = "https://pastebin.com/archive/text"
     def print_connecterror():
-        lib.PrintError(f"""
-    Exception occurred: {e}
-    Possible causes: Poor/Non-functioning Internet connection or pastebin is unreachable
-    Possible fixes: Troubleshoot internet connection or check status of {archive_url}
-            """)
+        lib.PrintError(f"\nException occurred: {e}\nPossible causes: Poor/Non-functioning Internet connection or pastebin is unreachable\nPossible fixes: Troubleshoot internet connection or check status of {archive_url}")
     def print_timeouterror():
-        lib.PrintError(f"""
-    Exception occurred: {e}
-    Possible causes: Too many requests made to {archive_url}
-    Possible fixes: Check firewall settings and check the status of {archive_url}.
-            """)
+        lib.PrintError(f"\nException occurred: {e}\nPossible causes: Too many requests made to {archive_url}\nPossible fixes: Check firewall settings and check the status of {archive_url}.")
     def print_genericerror():
-        lib.PrintError(f"""
-    Exception occurred: {e}
-            """)
-
+        lib.PrintError(f"\nException occurred: {e}")
     while True:
         try:
             archive_page = requests.get(archive_url, headers=lib.RandomHeaders())
@@ -103,22 +92,11 @@ def archive_engine(prescan_text, vars_dict):
 def parameter_connect(proch):
     archive_url = "https://pastebin.com/archive/text"
     def print_connecterror():
-        lib.PrintError(f"""
-    Exception occurred: {e}
-    Possible causes: Poor/Non-functioning Internet connection or pastebin is unreachable
-    Possible fixes: Troubleshoot internet connection or check status of {archive_url}
-            """)
+        lib.PrintError(f"\nException occurred: {e}\nPossible causes: Poor/Non-functioning Internet connection or pastebin is unreachable\nPossible fixes: Troubleshoot internet connection or check status of {archive_url}")
     def print_timeouterror():
-        lib.PrintError(f"""
-    Exception occurred: {e}
-    Possible causes: Too many requests made to {archive_url}
-    Possible fixes: Check firewall settings and check the status of {archive_url}.
-            """)
+        lib.PrintError(f"\nException occurred: {e}\nPossible causes: Too many requests made to {archive_url}\nPossible fixes: Check firewall settings and check the status of {archive_url}.")
     def print_genericerror():
-        lib.PrintError(f"""
-    Exception occurred: {e}
-            """)
-
+        lib.PrintError(f"\nException occurred: {e}")
     while True:
         url_foundation = "https://pastebin.com"
         full_arch_url = url_foundation + proch  # Generate URLs by adding the processed parameter to the base URL
@@ -163,8 +141,6 @@ def ArchiveSearch(vars_dict):
             else:
                 pass
             lib.PrintStatus("Finding params... [" + str(datetime.now().strftime('%X')) + "]")
-
-
             table = arch_soup.find("table", class_="maintable") # Fetch the table of recent pastes
             while True:
                 try:
@@ -175,7 +151,6 @@ def ArchiveSearch(vars_dict):
                     sleep(vars_dict['cooldown'])
                     lib.PrintError("Process resumed... [" + str(datetime.now().strftime('%X')) + "]")
                     continue
-
             for h in tablehrefs:
                 proch = h['href'] # fetch the URL param for each paste
                 lib.PrintSuccess("params fetched... [" + str(datetime.now().strftime('%X')) + "]")
@@ -187,8 +162,7 @@ def ArchiveSearch(vars_dict):
                 taglist = [
                     '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)">',
                     '<textarea class="paste_textarea" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)" rows="10">',
-                    '</textarea>', '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
-
+                    '</textarea>', '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this, event)">',
                 ]
                 for tag in taglist:
                     unprocessed = str(unprocessed).replace(tag, "") # process the raw text by removing html tags
@@ -201,16 +175,13 @@ def ArchiveSearch(vars_dict):
                             if b.lower() in compare_text.lower():
                                 lib.PrintStatus("Blacklisted phrase detected, passing...")
                                 flagged = True
-
                         if flagged is True:
                             continue
-
                     arch_final_file = codecs.open(str(vars_dict['workpath']) + str(full_arch_url).replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
                     arch_final_file.write(unprocessed)
                     arch_final_file.close()
                     arch_runs += 1
                     continue
-
                 elif vars_dict['arch_mode'] == 'f':
                     if path.isdir(vars_dict['workpath']) is True:
                         lib.PrintStatus("Running engine... [" + str(datetime.now().strftime('%X')) + "]")
@@ -222,10 +193,8 @@ def ArchiveSearch(vars_dict):
                                 if b.lower() in compare_text.lower():
                                     lib.PrintStatus("Blacklisted phrase detected, passing...")
                                     flagged = True
-
                             if flagged is True:
                                 continue
-
                         lib.PrintStatus("Running engine... [" + str(datetime.now().strftime('%X')) + "]")
                         archive_engine(unprocessed, vars_dict)
                         arch_runs += 1
@@ -262,14 +231,10 @@ def manual_setup():
             elif stopinput_input.lower() == 'n':
                 stop_input = int(lib.PrintQuestion("Enter the amount of successful pulls you wish to make (enter 0 for infinite)"))
             # Limiter and Cooldown
-            try:
-                limiter = int(lib.PrintQuestion("Enter the request limit you wish to use (recommended: 5)"))
-            except:
-                limiter = 5
-            try:
-                cooldown = int(lib.PrintQuestion("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
-            except:
-                cooldown = 1200
+            try: limiter = int(lib.PrintQuestion("Enter the request limit you wish to use (recommended: 5)"))
+            except: limiter = 5
+            try: cooldown = int(lib.PrintQuestion("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
+            except: cooldown = 1200
             break
         except ValueError:
             lib.PrintError("Invalid Input.")
@@ -280,7 +245,6 @@ def manual_setup():
         list_choice = lib.PrintQuestion("Utilize blacklisting to avoid spam documents [y]/[n]")
         if list_choice.lower() == 'y':
             blacklisting = True
-
             while True:
                 bfile_input = lib.PrintQuestion("Read blacklisted terms from file? [y]/[n]")
                 if bfile_input.lower() == 'n':
@@ -298,7 +262,6 @@ def manual_setup():
                                 blacklist.append(bline.rstrip())
                         break
             break
-
         elif list_choice.lower() == 'n':
             blacklisting = False
             break
@@ -324,7 +287,6 @@ def manual_setup():
             else:
                 keylisting = False
                 key_list = []
-
             regchoice = lib.PrintQuestion("Enable regular expression filtering [True]/[False]")
             if regchoice.lower() in ['true', 't']:
                 reglisting = True
@@ -399,10 +361,19 @@ arch_mode = {arch_mode}""")
             except Exception as e:
                 print(f"{e}")
                 break
-    vars_dict = {'workpath': workpath, 'stop_input': stop_input, 'limiter': limiter, 'cooldown': cooldown,
-                 'blacklisting': blacklisting, 'blacklist': blacklist, 'reglisting': reglisting, 'reglist': reglist,
-                 'keylisting': keylisting, 'key_list': key_list, 'arch_mode': arch_mode}
-
+    vars_dict = {
+        'workpath': workpath,
+        'stop_input': stop_input,
+        'limiter': limiter,
+        'cooldown': cooldown,
+        'blacklisting': blacklisting,
+        'blacklist': blacklist,
+        'reglisting': reglisting,
+        'reglist': reglist,
+        'keylisting': keylisting,
+        'key_list': key_list,
+        'arch_mode': arch_mode
+    }
     return vars_dict
 
 def load_config():
@@ -430,10 +401,19 @@ def load_config():
         else:
             lib.PrintError("No such file found")
             continue
-    vars_dict = {'workpath': workpath, 'stop_input': stop_input, 'limiter': limiter, 'cooldown': cooldown,
-                 'blacklisting': blacklisting, 'blacklist': blacklist, 'reglisting': reglisting, 'reglist': reglist,
-                 'keylisting': keylisting, 'key_list': key_list, 'arch_mode': arch_mode}
-
+    vars_dict = {
+        'workpath': workpath,
+        'stop_input': stop_input,
+        'limiter': limiter,
+        'cooldown': cooldown,
+        'blacklisting': blacklisting,
+        'blacklist': blacklist,
+        'reglisting': reglisting,
+        'reglist': reglist,
+        'keylisting': keylisting,
+        'key_list': key_list,
+        'arch_mode': arch_mode
+    }
     return vars_dict
 
 # Main
