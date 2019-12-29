@@ -300,6 +300,8 @@ def manual_setup():
             "[r]aw or [f]iltered search (filtered search will make use of the ArchiveEngine and will return fewer results): ")
         if amode_input.lower() == 'r':
             arch_mode = 'r'
+            keylisting = False
+            reglisting = False
             break
         elif amode_input.lower() == 'f':
             arch_mode = 'f'
