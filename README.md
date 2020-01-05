@@ -11,5 +11,3 @@ A small python script to scrape the public pastebin archive and optionally filte
 ## TODO:
 - Maintainence and Bug Fixes
 - Create Pastebin API
-
-readme update
