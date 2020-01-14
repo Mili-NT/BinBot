@@ -214,7 +214,8 @@ def manual_setup():
                 pass
             else:
                 if name.lower == 'nt':
-                    workpath = workpath + str('\\')                else:
+                    workpath = workpath + str('\\')
+                else:
                     workpath = workpath + str('/')
             break
         else:
