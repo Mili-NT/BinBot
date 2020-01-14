@@ -5,7 +5,7 @@ https://github.com/Mili-NT/BinBot
 - Name: **BinBot**
 - Category: **Data Collection & Analysis**
 - Creator: **Mili**
-- Maintainers: **None**
+- Maintainers: **KuteKetX**
 
 ## Project Purpose:
 BinBot monitors the site pastebin for uploaded documents.
@@ -27,6 +27,6 @@ However, due to the extreme flexibility offered by regular expression pattern ma
 2. IP -> Hostname resolver
 
 ## Project Insights:
-- 11 Stars
+- 23 Stars
 - 3 Forks
 - 74 Commits Across 1 Branch
