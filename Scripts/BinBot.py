@@ -112,7 +112,7 @@ def parameter_connect(proch):
                 print_genericerror()
                 continue
 
-def ArchiveSearch(vars_dict):
+def Non_API_Search(vars_dict):
     arch_runs = 0
     while True:
         if arch_runs > 0:
@@ -207,7 +207,7 @@ def manual_setup():
     while True:
         workpath = lib.PrintInput("Enter the path you wish to save text documents to (enter curdir for current directory)")
         if workpath.lower() == 'curdir':
-            if os.name.lower() == 'nt':
+            if name.lower() == 'nt':
                 workpath = getcwd()
             else:
                 workpath = syspath[0]
@@ -432,7 +432,7 @@ def main():
             vars_dict = load_config()
         elif configchoice.lower() in ['no', 'n']:
             vars_dict = manual_setup()
-        ArchiveSearch(vars_dict)
+        Non_API_Search(vars_dict)
 
 if __name__ == "__main__":
     main()
