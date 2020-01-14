@@ -66,7 +66,8 @@ def archive_engine(prescan_text, vars_dict):
         for k in vars_dict['key_list']:
             if k.lower() in prescan_text.lower():
                 today = datetime.now().strftime('%x')
-                now = datetime.now().strftime('%X')                creationdate = f"{today}~{now}"
+                now = datetime.now().strftime('%X')
+                creationdate = f"{today}~{now}"
                 keyfilename = f"[Keyword- {k}]{creationdate}".replace("/", ".").replace(":", "-")
                 keyfi = codecs.open(f'{vars_dict["workpath"]}{keyfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
                 keyfi.write(prescan_text)
@@ -79,7 +80,8 @@ def archive_engine(prescan_text, vars_dict):
             count += 1
             for match in re.findall(regex_pattern, prescan_text):
                 today = datetime.now().strftime('%x')
-                now = datetime.now().strftime('%X')                creationdate = f"{today}~{now}"
+                now = datetime.now().strftime('%X')
+                creationdate = f"{today}~{now}"
                 regexfilename = f"[Pattern [{str(count)}]]{creationdate}".replace("/", ".").replace(":", "-")
                 regfi = codecs.open(f'{vars_dict["workpath"]}{regexfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+','utf-8')
                 regfi.write(str(match))
@@ -152,7 +154,6 @@ def Non_API_Search(vars_dict):
                 lib.PrintSuccess("params fetched... [" + str(datetime.now().strftime('%X')) + "]")
                 lib.PrintStatus(f"Acting on param {proch}... [{datetime.now().strftime('%X')}]")
                 full_archpage, full_arch_url = parameter_connect(proch)
-                sleep(5)
                 item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
                 unprocessed = item_soup.find('textarea') # Fetch the raw text in the paste.
                 taglist = [
@@ -174,12 +175,14 @@ def Non_API_Search(vars_dict):
                                 flagged = True
                         if flagged is True:
                             continue
-                    arch_final_file = codecs.open(str(vars_dict['workpath']) + str(full_arch_url).replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
+                    arch_final_file = codecs.open(str(vars_dict['workpath']) + str(proch) + ".txt", 'w+', 'utf-8')
                     arch_final_file.write(unprocessed)
                     arch_final_file.close()
                     arch_runs += 1
+                    sleep(5) #TODO: Find out why limiter doesnt work
                     continue
-                elif vars_dict['arch_mode'] == 'f':                    if path.isdir(vars_dict['workpath']) is True:
+                elif vars_dict['arch_mode'] == 'f':
+                    if path.isdir(vars_dict['workpath']) is True:
                         lib.PrintStatus(f"Running engine... [{datetime.now().strftime('%X')}]")
                         if vars_dict['blacklisting'] is True:
                             flagged = False
@@ -194,6 +197,7 @@ def Non_API_Search(vars_dict):
                         lib.PrintStatus(f"Running engine... [{datetime.now().strftime('%X')}]")
                         archive_engine(unprocessed, vars_dict)
                         arch_runs += 1
+                        sleep(5) #TODO: Find out why limiter doesnt work
                         continue
         else:
             lib.PrintSuccess(f"Operation Finished... [{datetime.now().strftime('%X')}]")
