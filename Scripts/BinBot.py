@@ -179,7 +179,7 @@ def Non_API_Search(vars_dict):
                     arch_final_file.write(unprocessed)
                     arch_final_file.close()
                     arch_runs += 1
-                    sleep(5) #TODO: Find out why limiter doesnt work
+                    sleep(vars_dict['limiter'])
                     continue
                 elif vars_dict['arch_mode'] == 'f':
                     if path.isdir(vars_dict['workpath']) is True:
@@ -197,7 +197,7 @@ def Non_API_Search(vars_dict):
                         lib.PrintStatus(f"Running engine... [{datetime.now().strftime('%X')}]")
                         archive_engine(unprocessed, vars_dict)
                         arch_runs += 1
-                        sleep(5) #TODO: Find out why limiter doesnt work
+                        sleep(vars_dict['limiter'])
                         continue
         else:
             lib.PrintSuccess(f"Operation Finished... [{datetime.now().strftime('%X')}]")
