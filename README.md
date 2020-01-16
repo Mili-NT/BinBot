@@ -4,10 +4,9 @@ A small python script to scrape the public pastebin archive and optionally filte
 **Planned Features:**
 
 * Pastebin API support (WORK IN PROGRESS)
-* Re-implementing proxy chain
-* Malware detection via YARA rules (working on it!)
+* Logging system
+* Malware detection via YARA rules (WORK IN PROGRESS)
 
 
 ## TODO:
 - Maintainence and Bug Fixes
-- Create Pastebin API
