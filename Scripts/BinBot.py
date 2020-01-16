@@ -89,8 +89,9 @@ def archive_engine(prescan_text, proch, vars_dict):
                                 "Hidden_Window": "-WindowStyle Hidden",
                                 "Invoke_Flag": "invoke",
                                 "Certutil_Call": "certutil -decode",
-                                "Hidden_Flag": "hidden",
-                                "Obfuscated_Command": "FromBase64String("
+                                "Execution_Policy": "Set-ExecutionPolicy",
+                                "Obfuscated_Command": "FromBase64String(",
+                                "Exec_Bypass": "-exec Bypass"
                                 }
         pythonArtifacts = {
                             "python_syscall": "os.system",
@@ -106,31 +107,38 @@ def archive_engine(prescan_text, proch, vars_dict):
                             "b64_Zip": (True,"UEs"),
                             }
         # Checks for powershell artifacts:
-        for x in powershellArtifacts.keys():
-            if powershellArtifacts[x] in prescan_text:
-                lib.PrintSuccess(f"Powershell Indicator Found: {x}")
-            with open(f"[{x}]{proch}.ps1", 'w+') as savefile:
+        if any(val in prescan_text for val in powershellArtifacts.values()):
+            lib.PrintSuccess(f"Powershell Indicator Found")
+            with open(f"{vars_dict['workpath']}{proch}.ps1", 'w+') as savefile:
+                savefile.write(prescan_text)
+        else:
+            with open(f"{vars_dict['workpath']}{proch}.txt", 'w+') as savefile:
                 savefile.write(prescan_text)
         # Checks for base64 artifacts:
         for x in base64Artifacts.keys():
             if (base64Artifacts[x])[0] is True:
                 if prescan_text.startswith((base64Artifacts[x])[1]):
                     lib.PrintSuccess(f"Base64 File Artifact Found: {x}")
-                    with open(f"[{x}]{proch}.b64", 'w+') as savefile:
+                    with open(f"{vars_dict['workpath']}[{x}]{proch}.b64", 'w+') as savefile:
                         savefile.write(prescan_text)
             else:
                 if (base64Artifacts[x])[1] in prescan_text:
                     lib.PrintSuccess(f"base64 String Artifact Found: {x}")
-                    with open(f"[{x}]{proch}.b64", 'w+') as savefile:
+                    with open(f"{vars_dict['workpath']}[{x}]{proch}.b64", 'w+') as savefile:
+                        savefile.write(prescan_text)
+                else:
+                    with open(f"{vars_dict['workpath']}{proch}.txt", 'w+') as savefile:
                         savefile.write(prescan_text)
         # Checks for python artifacts
-        for x in pythonArtifacts.keys():
-            if pythonArtifacts[x] in prescan_text:
-                lib.PrintSuccess(f"Python Artifact Found: {x}")
-                with open(f"[{x}]{proch}.py", 'w+') as savefile:
-                    savefile.write(prescan_text)
+        if any(val in prescan_text for val in pythonArtifacts.values()):
+            lib.PrintSuccess(f"Python Artifact Found")
+            with open(f"{vars_dict['workpath']}{proch}.py", 'w+') as savefile:
+                savefile.write(prescan_text)
+        else:
+            with open(f"{vars_dict['workpath']}{proch}.txt", 'w+') as savefile:
+                savefile.write(prescan_text)
     if any([vars_dict['reglisting'] is False, vars_dict['keylisting'] is False, vars_dict['malware_scanning'] is False]) is False:
-        with open(f"{proch}.txt", 'w+') as savefile:
+        with open(f"{vars_dict['workpath']}{proch}.txt", 'w+') as savefile:
             savefile.write(prescan_text)
 
 def parameter_connect(proch):
@@ -142,7 +150,7 @@ def parameter_connect(proch):
     def print_genericerror():
         lib.PrintError(f"\nException occurred: {e}")
     while True:
-        url_foundation = "https://pastebin.com"
+        url_foundation = "https://pastebin.com/"
         full_arch_url = url_foundation + proch  # Generate URLs by adding the processed parameter to the base URL
         try:
             full_archpage = requests.get(full_arch_url, headers=lib.RandomHeaders())
@@ -196,7 +204,7 @@ def Non_API_Search(vars_dict):
                     lib.PrintError(f"Process resumed... [{datetime.now().strftime('%X')}]")
                     continue
             for h in tablehrefs:
-                proch = h['href'] # fetch the URL param for each paste
+                proch = (h['href']).replace("/", "") # fetch the URL param for each paste
                 lib.PrintSuccess("params fetched... [" + str(datetime.now().strftime('%X')) + "]")
                 lib.PrintStatus(f"Acting on param {proch}... [{datetime.now().strftime('%X')}]")
                 full_archpage, full_arch_url = parameter_connect(proch)
