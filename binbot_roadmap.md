@@ -3,28 +3,26 @@ https://github.com/Mili-NT/BinBot
 
 ## Project Details:
 - Name: **BinBot**
-- Category: **Data Collection & Analysis**
+- Category: **Data Collection and Security**
 - Creator: **Mili**
 - Maintainers: **KuteKetX**
 
 ## Project Purpose:
-BinBot monitors the site pastebin for uploaded documents.
-It uses keyword matching, blacklisting, and regular expressions to analyze documents.
+BinBot is intended as a data collection and analysis program. Due to the extreme flexibility offered by regular expression pattern matching, BinBot can be used to collect and filter almost any type of data with ease.
 
 ## Project Intent:
-BinBot is intended as a data collection and analysis program.
-Due to pastebin's popularity among hackers, BinBot was primarily intended to find and document malicious activity.
-However, due to the extreme flexibility offered by regular expression pattern matching, it can be used to collect any type of data.
+BinBot is primarily designed to look for common indicators of malicious activity and detect hackers using pastebin as a hosting service for their malware. By analyzing malware hosted on pastebin, a security researcher can detect trends in both malicious spam and classic malware, as well as collecting malware samples for reverse engineering. 
 
 ## Current Features:
 - Multithreaded
+- Malware Indicator Analysis
 - Anti-Ban Capabilities (UA Switching, etc.)
 - Three different filtering methods
 - Configuration Files
 
 ## Planned Features:
-1. Malware detection via YARA rules
-2. IP -> Hostname resolver
+1. Extensible and customizable malware detection via YARA rules
+2. Trend analysis 
 
 ## Project Insights:
 - 23 Stars
