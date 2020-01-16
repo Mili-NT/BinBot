@@ -26,5 +26,5 @@ BinBot is primarily designed to look for common indicators of malicious activity
 
 ## Project Insights:
 - 23 Stars
-- 3 Forks
-- 74 Commits Across 1 Branch
+- 5 Forks
+- 139 Commits Across 1 Branch
