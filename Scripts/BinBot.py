@@ -61,15 +61,12 @@ def archive_connect():
                 print_genericerror()
                 break
 
-def archive_engine(prescan_text, vars_dict):
+def archive_engine(prescan_text, proch, vars_dict):
     if vars_dict['keylisting'] is True:
         for k in vars_dict['key_list']:
             if k.lower() in prescan_text.lower():
-                today = datetime.now().strftime('%x')
-                now = datetime.now().strftime('%X')
-                creationdate = f"{today}~{now}"
-                keyfilename = f"[Keyword- {k}]{creationdate}".replace("/", ".").replace(":", "-")
-                keyfi = codecs.open(f'{vars_dict["workpath"]}{keyfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+', 'utf-8')
+                keyfilename = f"[{k}]{proch}"
+                keyfi = codecs.open(f'{vars_dict["workpath"]}{keyfilename}.txt', 'w+', 'utf-8')
                 keyfi.write(prescan_text)
                 keyfi.close()
             else:
@@ -79,13 +76,62 @@ def archive_engine(prescan_text, vars_dict):
         for regex_pattern in vars_dict['reglist']:
             count += 1
             for match in re.findall(regex_pattern, prescan_text):
-                today = datetime.now().strftime('%x')
-                now = datetime.now().strftime('%X')
-                creationdate = f"{today}~{now}"
-                regexfilename = f"[Pattern [{str(count)}]]{creationdate}".replace("/", ".").replace(":", "-")
-                regfi = codecs.open(f'{vars_dict["workpath"]}{regexfilename}'.replace(":", "-").replace(":", "-").replace("/", "-") + ".txt", 'w+','utf-8')
+                regexfilename = f"[Pattern [{str(count)}]{proch}"
+                regfi = codecs.open(f'{vars_dict["workpath"]}{regexfilename}.txt', 'w+','utf-8')
                 regfi.write(str(match))
                 regfi.close()
+    if vars_dict['malware_scanning'] is True:
+        powershellArtifacts = {
+                                "powershell_call": "powershell",
+                                "IEX_call": "IEX",
+                                "Download_String": "downloadstring",
+                                "New_Object": "new-object",
+                                "Hidden_Window": "-WindowStyle Hidden",
+                                "Invoke_Flag": "invoke",
+                                "Certutil_Call": "certutil -decode",
+                                "Hidden_Flag": "hidden",
+                                "Obfuscated_Command": "FromBase64String("
+                                }
+        pythonArtifacts = {
+                            "python_syscall": "os.system",
+                            "python_socket": "socket.socket(socket.AF_INET, socket.SOCK_STREAM)"
+                          }
+        base64Artifacts = {
+                            "b64_WWW_Uppercase": (False, "V1dXLg"),
+                            "b64_Gzip": (True,"H4sI"),
+                            "b64_HTTPS_Lowercase": (False, "aHR0cDov"),
+                            "b64_HTTPS_Uppercase": (False,"SFRUUDov"),
+                            "b64_ELF": (True,"f0VM"),
+                            "b64_WWW_Lowercase": (False,"d3d3Lg"),
+                            "b64_Zip": (True,"UEs"),
+                            }
+        # Checks for powershell artifacts:
+        for x in powershellArtifacts.keys():
+            if powershellArtifacts[x] in prescan_text:
+                lib.PrintSuccess(f"Powershell Indicator Found: {x}")
+            with open(f"[{x}]{proch}.ps1", 'w+') as savefile:
+                savefile.write(prescan_text)
+        # Checks for base64 artifacts:
+        for x in base64Artifacts.keys():
+            if (base64Artifacts[x])[0] is True:
+                if prescan_text.startswith((base64Artifacts[x])[1]):
+                    lib.PrintSuccess(f"Base64 File Artifact Found: {x}")
+                    with open(f"[{x}]{proch}.b64", 'w+') as savefile:
+                        savefile.write(prescan_text)
+            else:
+                if (base64Artifacts[x])[1] in prescan_text:
+                    lib.PrintSuccess(f"base64 String Artifact Found: {x}")
+                    with open(f"[{x}]{proch}.b64", 'w+') as savefile:
+                        savefile.write(prescan_text)
+        # Checks for python artifacts
+        for x in pythonArtifacts.keys():
+            if pythonArtifacts[x] in prescan_text:
+                lib.PrintSuccess(f"Python Artifact Found: {x}")
+                with open(f"[{x}]{proch}.py", 'w+') as savefile:
+                    savefile.write(prescan_text)
+    if any([vars_dict['reglisting'] is False, vars_dict['keylisting'] is False, vars_dict['malware_scanning'] is False]) is False:
+        with open(f"{proch}.txt", 'w+') as savefile:
+            savefile.write(prescan_text)
 
 def parameter_connect(proch):
     archive_url = "https://pastebin.com/archive/text"
@@ -175,30 +221,10 @@ def Non_API_Search(vars_dict):
                                 flagged = True
                         if flagged is True:
                             continue
-                    arch_final_file = codecs.open(str(vars_dict['workpath']) + str(proch) + ".txt", 'w+', 'utf-8')
-                    arch_final_file.write(unprocessed)
-                    arch_final_file.close()
+                    archive_engine(unprocessed, proch, vars_dict)
                     arch_runs += 1
                     sleep(vars_dict['limiter'])
                     continue
-                elif vars_dict['arch_mode'] == 'f':
-                    if path.isdir(vars_dict['workpath']) is True:
-                        lib.PrintStatus(f"Running engine... [{datetime.now().strftime('%X')}]")
-                        if vars_dict['blacklisting'] is True:
-                            flagged = False
-                            compare_text = re.sub(r'\s+', '', unprocessed)  # strip all whitespace for comparison
-                            for b in vars_dict['blacklist']:
-                                b = re.sub(r'\s+', '', b)  # strip all whitespace for comparison
-                                if b.lower() in compare_text.lower():
-                                    lib.PrintStatus("Blacklisted phrase detected, passing...")
-                                    flagged = True
-                            if flagged is True:
-                                continue
-                        lib.PrintStatus(f"Running engine... [{datetime.now().strftime('%X')}]")
-                        archive_engine(unprocessed, vars_dict)
-                        arch_runs += 1
-                        sleep(vars_dict['limiter'])
-                        continue
         else:
             lib.PrintSuccess(f"Operation Finished... [{datetime.now().strftime('%X')}]")
             break
@@ -338,6 +364,14 @@ def manual_setup():
                                 reglist.append(line.rstrip())
                         break
                 break
+    while True:
+        malware_choice = lib.PrintInput("Enable scanning documents for malicious indicators? [y/n]")
+        if malware_choice.lower() in ['y', 'yes']:
+            malware_scanning = True
+            break
+        else:
+            malware_scanning = False
+            break
     # Saving
     while True:
         savechoice = lib.PrintInput('Save configuration to file for repeated use? [y]/[n]')
@@ -359,7 +393,8 @@ reglisting = {reglisting}
 reglist = {reglist}
 keylisting = {keylisting}
 key_list = {key_list}
-arch_mode = {arch_mode}""")
+arch_mode = {arch_mode}
+malware_scanning = {malware_scanning}""")
                     break
             except Exception as e:
                 print(f"{e}")
@@ -375,7 +410,8 @@ arch_mode = {arch_mode}""")
         'reglist': reglist,
         'keylisting': keylisting,
         'key_list': key_list,
-        'arch_mode': arch_mode
+        'arch_mode': arch_mode,
+        'malware_scanning': malware_scanning,
     }
     return vars_dict
 
@@ -400,6 +436,7 @@ def load_config():
             keylisting = parser.getboolean('initial_vars', 'keylisting')
             key_list = parser.get('initial_vars', 'key_list')
             arch_mode = parser.get('initial_vars', 'arch_mode')
+            malware_scanning = parser.getboolean('initial_vars', 'malware_scanning')
             break
         else:
             lib.PrintError("No such file found")
@@ -415,7 +452,8 @@ def load_config():
         'reglist': reglist,
         'keylisting': keylisting,
         'key_list': key_list,
-        'arch_mode': arch_mode
+        'arch_mode': arch_mode,
+        'malware_scanning': malware_scanning,
     }
     return vars_dict
 
