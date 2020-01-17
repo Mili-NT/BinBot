@@ -88,7 +88,7 @@ def parameter_connect(proch):
 def archive_engine(prescan_text, proch, vars_dict):
     fileWritten = False
     if vars_dict['keylisting'] is True:
-        for k in list(vars_dict['keylist']):
+        for k in vars_dict['keylist']:
             if k.lower() in prescan_text.lower():
                 lib.PrintSuccess(f"Keyword found: {k}")
                 keyfilename = f"[{k}]{proch}"
