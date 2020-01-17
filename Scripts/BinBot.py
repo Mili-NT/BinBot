@@ -121,9 +121,11 @@ def archive_engine(prescan_text, proch, vars_dict):
             "Execution_Policy": "Set-ExecutionPolicy",
             "Obfuscated_Command": "FromBase64String(",
         	"Exec_Bypass": "-exec Bypass"
+
         }
         pythonArtifacts = {
         	"python_syscall": "os.system",
+			"python_subprocess": "subprocess.Popen(",
         	"python_socket": "socket.socket(socket.AF_INET, socket.SOCK_STREAM)"
         }
         base64Artifacts = {
