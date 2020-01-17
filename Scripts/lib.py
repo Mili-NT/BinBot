@@ -22,7 +22,7 @@ import socket
 import requests
 from random import choice
 
-UserAgents = [
+user_agents = [
 	'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
 	'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
 	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
@@ -35,55 +35,55 @@ UserAgents = [
 	'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:50.0) Gecko/20100101 Firefox/50.0'
 ]
 
-def PrintSuccess(Msg):
+def print_success(msg):
     if os.name == 'nt':
-        print('[+] ' + Msg)
+        print('[+] ' + msg)
     else:
-        print('\033[1;32m[+]\033[1;m ' + Msg)
+        print('\033[1;32m[+]\033[1;m ' + msg)
 
-def PrintStatus(Msg):
+def PrintStatus(msg):
     if os.name == 'nt':
-        print('[*] ' + Msg)
+        print('[*] ' + msg)
     else:
-        print('\033[1;34m[*]\033[1;m ' + Msg)
+        print('\033[1;34m[*]\033[1;m ' + msg)
 
-def PrintFailure(Msg):
+def print_failure(msg):
     if os.name == 'nt':
-        print('[-] ' + Msg)
+        print('[-] ' + msg)
     else:
-        print('\033[1;31m[-]\033[1;m ' + Msg)
+        print('\033[1;31m[-]\033[1;m ' + msg)
 
-def PrintError(Msg):
+def print_error(msg):
     if os.name == 'nt':
-        print('[!] ' + Msg)
+        print('[!] ' + msg)
     else:
-        print('\033[1;31m[!]\033[1;m ' + Msg)
+        print('\033[1;31m[!]\033[1;m ' + msg)
 
-def PrintInput(Msg):
+def print_input(msg):
     if os.name == 'nt':
-        return input('[?] ' + Msg + ": ")
+        return input('[?] ' + msg + ": ")
     else:
-        return input('\033[1;33m[*]\033[1;m ' + Msg + ": ")
+        return input('\033[1;33m[*]\033[1;m ' + msg + ": ")
 
-def IsIPAddress(Address):
+def is_ip_address(address):
     try:
-        socket.inet_aton(Address)
-        if Address.count('.') == 3:
+        socket.inet_aton(address)
+        if address.count('.') == 3:
             return True
     except socket.error:
         return False
 
-def ValidateIP(Address):
-    AddressChunks = Address.split('.')
-    if len(AddressChunks) != 4:
+def validate_ip(address):
+    address_chunks = address.split('.')
+    if len(address_chunks) != 4:
         return False
-    for Chunk in AddressChunks:
-        if not Chunk.isdigit():
+    for chunk in address_chunks:
+        if not chunk.isdigit():
             return False
-        ChunkInt = int(Chunk)
-        if ChunkInt < 0 or ChunkInt > 255:
+        chunk_int = int(chunk)
+        if chunk_int < 0 or chunk_int > 255:
             return False
     return True
 
-def RandomHeaders():
-    return { 'User-Agent': choice(UserAgents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
+def random_headers():
+    return { 'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
