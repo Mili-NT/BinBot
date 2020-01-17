@@ -60,15 +60,42 @@ def archive_connect():
             else:
                 print_genericerror()
                 break
+def parameter_connect(proch):
+    archive_url = "https://pastebin.com/archive/text"
+    def print_connecterror():
+        lib.PrintError(f"\nException occurred: {e}\nPossible causes: Poor/Non-functioning Internet connection or pastebin is unreachable\nPossible fixes: Troubleshoot internet connection or check status of {archive_url}")
+    def print_timeouterror():
+        lib.PrintError(f"\nException occurred: {e}\nPossible causes: Too many requests made to {archive_url}\nPossible fixes: Check firewall settings and check the status of {archive_url}.")
+    def print_genericerror():
+        lib.PrintError(f"\nException occurred: {e}")
+    while True:
+        url_foundation = "https://pastebin.com/"
+        full_arch_url = url_foundation + proch  # Generate URLs by adding the processed parameter to the base URL
+        try:
+            full_archpage = requests.get(full_arch_url, headers=lib.RandomHeaders())
+            return full_archpage, full_arch_url
+        except Exception as e:
+            if e is requests.exceptions.ConnectionError:
+                print_connecterror()
+                continue
+            elif e is requests.exceptions.Timeout:
+                print_timeouterror()
+                continue
+            else:
+                print_genericerror()
+                continue
 
 def archive_engine(prescan_text, proch, vars_dict):
+    fileWritten = False
     if vars_dict['keylisting'] is True:
-        for k in vars_dict['key_list']:
+        for k in list(vars_dict['keylist']):
             if k.lower() in prescan_text.lower():
+                lib.PrintSuccess(f"Keyword found: {k}")
                 keyfilename = f"[{k}]{proch}"
                 keyfi = codecs.open(f'{vars_dict["workpath"]}{keyfilename}.txt', 'w+', 'utf-8')
                 keyfi.write(prescan_text)
                 keyfi.close()
+                fileWritten = True
             else:
                 pass
     if vars_dict['reglisting'] is True:
@@ -76,10 +103,12 @@ def archive_engine(prescan_text, proch, vars_dict):
         for regex_pattern in vars_dict['reglist']:
             count += 1
             for match in re.findall(regex_pattern, prescan_text):
+                lib.PrintSuccess(f"Regex match found: {regex_pattern}")
                 regexfilename = f"[Pattern [{str(count)}]{proch}"
                 regfi = codecs.open(f'{vars_dict["workpath"]}{regexfilename}.txt', 'w+','utf-8')
                 regfi.write(str(match))
                 regfi.close()
+                fileWritten = True
     if vars_dict['malware_scanning'] is True:
         powershellArtifacts = {
                                 "powershell_call": "powershell",
@@ -137,35 +166,10 @@ def archive_engine(prescan_text, proch, vars_dict):
         else:
             with open(f"{vars_dict['workpath']}{proch}.txt", 'w+') as savefile:
                 savefile.write(prescan_text)
-    if any([vars_dict['reglisting'] is False, vars_dict['keylisting'] is False, vars_dict['malware_scanning'] is False]) is False:
+        fileWritten = True
+    if fileWritten is False:
         with open(f"{vars_dict['workpath']}{proch}.txt", 'w+') as savefile:
             savefile.write(prescan_text)
-
-def parameter_connect(proch):
-    archive_url = "https://pastebin.com/archive/text"
-    def print_connecterror():
-        lib.PrintError(f"\nException occurred: {e}\nPossible causes: Poor/Non-functioning Internet connection or pastebin is unreachable\nPossible fixes: Troubleshoot internet connection or check status of {archive_url}")
-    def print_timeouterror():
-        lib.PrintError(f"\nException occurred: {e}\nPossible causes: Too many requests made to {archive_url}\nPossible fixes: Check firewall settings and check the status of {archive_url}.")
-    def print_genericerror():
-        lib.PrintError(f"\nException occurred: {e}")
-    while True:
-        url_foundation = "https://pastebin.com/"
-        full_arch_url = url_foundation + proch  # Generate URLs by adding the processed parameter to the base URL
-        try:
-            full_archpage = requests.get(full_arch_url, headers=lib.RandomHeaders())
-            return full_archpage, full_arch_url
-        except Exception as e:
-            if e is requests.exceptions.ConnectionError:
-                print_connecterror()
-                continue
-            elif e is requests.exceptions.Timeout:
-                print_timeouterror()
-                continue
-            else:
-                print_genericerror()
-                continue
-
 def Non_API_Search(vars_dict):
     arch_runs = 0
     while True:
@@ -218,17 +222,16 @@ def Non_API_Search(vars_dict):
                 ]
                 for tag in taglist:
                     unprocessed = str(unprocessed).replace(tag, "") # process the raw text by removing html tags
-                if vars_dict['arch_mode'] == 'r':
-                    if vars_dict['blacklisting'] is True:
-                        flagged = False
-                        compare_text = re.sub(r'\s+', '', unprocessed) # strip all whitespace for comparison
-                        for b in vars_dict['blacklist']:
-                            b = re.sub(r'\s+', '', b) # strip all whitespace for comparison
-                            if b.lower() in compare_text.lower():
-                                lib.PrintStatus("Blacklisted phrase detected, passing...")
-                                flagged = True
-                        if flagged is True:
-                            continue
+                flagged = False
+                if vars_dict['blacklisting'] is True:
+                    print("blacklisting checks started...")
+                    compare_text = re.sub(r'\s+', '', unprocessed) # strip all whitespace for comparison
+                    for b in vars_dict['blacklist']:
+                        b = re.sub(r'\s+', '', b) # strip all whitespace for comparison
+                        if b.lower() in compare_text.lower():
+                            lib.PrintStatus("Blacklisted phrase detected, passing...")
+                            flagged = True
+                if flagged is False:
                     archive_engine(unprocessed, proch, vars_dict)
                     arch_runs += 1
                     sleep(vars_dict['limiter'])
@@ -307,37 +310,30 @@ def manual_setup():
             continue
     # Filtering
     while True:
-        reglist = []
-        amode_input = lib.PrintInput("[r]aw or [f]iltered search (filtered search will make use of the ArchiveEngine and will return fewer results)")
-        if amode_input.lower() == 'r':
-            arch_mode = 'r'
+        keychoice = lib.PrintInput("Enable keyword filtering [True]/[False]")
+        if keychoice.lower() not in ['t', 'f', 'true', 'false']:
+            lib.PrintError("Invalid Input")
+            continue
+        elif keychoice.lower() in ['true', 't']:
+            keylisting = True
+        elif keychoice.lower() in ['false', 'f']:
             keylisting = False
-            key_list = []
+        regchoice = lib.PrintInput("Enable regular expression filtering [True]/[False]")
+        if regchoice.lower() in ['true', 't']:
+            reglisting = True
+        else:
             reglisting = False
-            reglist = []
-            break
-        elif amode_input.lower() == 'f':
-            arch_mode = 'f'
-            keychoice = lib.PrintInput("Enable keyword filtering [True]/[False]")
-            if keychoice.lower() in ['true', 't']:
-                keylisting = True
-            else:
-                keylisting = False
-                key_list = []
-            regchoice = lib.PrintInput("Enable regular expression filtering [True]/[False]")
-            if regchoice.lower() in ['true', 't']:
-                reglisting = True
-            else:
-                reglisting = False
-                reglist = []
-            if keylisting is False and reglisting is False:
-                arch_mode = 'r'
-            break
+        keylist = []
+        reglist = []
+        break
     # Filtering Input
     if keylisting is True:
         while True:
             filechoice = lib.PrintInput("Load keywords from file: [y]/[n]")
-            if filechoice.lower() == 'y':
+            if filechoice.lower() not in ['y', 'n', 'yes', 'no']:
+                lib.PrintError("Invalid Input.")
+                continue
+            elif filechoice.lower() in ['y', 'yes']:
                 filterfile_input = lib.PrintInput("Enter full path of the file")
                 if path.isfile(filterfile_input):
                     lib.PrintSuccess("keylist file detected...")
@@ -347,20 +343,20 @@ def manual_setup():
                     continue
                 with open(filterfile_input) as filterfile:
                     for lines in filterfile.readlines():
-                        key_list.append(lines.rstrip())
+                        keylist.append(lines.rstrip())
                     break
-            elif filechoice.lower() == 'n':
+            elif filechoice.lower() in ['n', 'no']:
                 keyword_input = lib.PrintInput("Enter the keywords you'd like to search for, seperated by a comma").split(",")
                 for k in keyword_input:
-                    key_list.append(k)
+                    keylist.append(k)
                 break
     if reglisting is True:
         while True:
             regfilechoice = lib.PrintInput("Load regex from file (one pattern per line)? [y]/[n]")
-            if regfilechoice.lower() not in ['y', 'n']:
+            if regfilechoice.lower() not in ['y', 'yes', 'no', 'n']:
                 lib.PrintError("Invalid Input")
                 continue
-            elif regfilechoice.lower() == 'y':
+            elif regfilechoice.lower() in ['y', 'yes']:
                 while True:
                     regpath = lib.PrintInput('Enter the full path (including extension) to the pattern file')
                     if path.isfile(regpath) is False:
@@ -371,6 +367,18 @@ def manual_setup():
                             for line in regfile.readlines():
                                 reglist.append(line.rstrip())
                         break
+            elif regfilechoice.lower() in ['n', 'no']:
+                while True:
+                    regex_input = lib.PrintInput("Enter the desired amount of regular expressions, or then enter exit to continue: ")
+                    if regex_input.lower() == 'exit':
+                        if len(reglist) == 0:
+                            lib.PrintError("No regular expressions entered, enter at least one query.")
+                            continue
+                        else:
+                            break
+                    else:
+                        reglist.append(regex_input)
+                        continue
                 break
     while True:
         malware_choice = lib.PrintInput("Enable scanning documents for malicious indicators? [y/n]")
@@ -389,6 +397,20 @@ def manual_setup():
             configname = lib.PrintInput("Enter the config name (no extension)")
             try:
                 with open(configname + '.ini', 'w+') as cfile:
+                    # String conversions because configparser doesnt natively support reading lists
+                    # I know this is janky, but it'll hold for now
+                    keystr = ""
+                    regstr = ""
+                    blackstr = ""
+                    for x in keylist:
+                        keystr += f",{x}"
+                    for x in reglist:
+                        regstr += f",{x}"
+                    for x in blacklist:
+                        blackstr += f",{x}"
+                    keystr = keystr[1:]
+                    regstr = regstr[1:]
+                    blackstr = blackstr[1:]
                     cfile.write(
 f"""[initial_vars]
 workpath = {workpath}
@@ -396,12 +418,11 @@ stop_input = {stop_input}
 limiter = {limiter}
 cooldown = {cooldown}
 blacklisting = {blacklisting}
-blacklist = {blacklist}
+blackstr = {blackstr}
 reglisting = {reglisting}
-reglist = {reglist}
+regstr = {regstr}
 keylisting = {keylisting}
-key_list = {key_list}
-arch_mode = {arch_mode}
+keystr = {keystr}
 malware_scanning = {malware_scanning}""")
                     break
             except Exception as e:
@@ -417,12 +438,10 @@ malware_scanning = {malware_scanning}""")
         'reglisting': reglisting,
         'reglist': reglist,
         'keylisting': keylisting,
-        'key_list': key_list,
-        'arch_mode': arch_mode,
+        'key_list': keylist,
         'malware_scanning': malware_scanning,
     }
     return vars_dict
-
 def load_config():
     parser = ConfigParser()
     while True:
@@ -438,13 +457,23 @@ def load_config():
             limiter = int(parser.get('initial_vars', 'limiter'))
             cooldown = int(parser.get('initial_vars', 'cooldown'))
             blacklisting = parser.get('initial_vars', 'blacklisting')
-            blacklist = parser.get('initial_vars', 'blacklist')
             reglisting = parser.getboolean('initial_vars', 'reglisting')
-            reglist = parser.get('initial_vars', 'reglist')
             keylisting = parser.getboolean('initial_vars', 'keylisting')
-            key_list = parser.get('initial_vars', 'key_list')
-            arch_mode = parser.get('initial_vars', 'arch_mode')
             malware_scanning = parser.getboolean('initial_vars', 'malware_scanning')
+            # Reading and converting stored strings to lists:
+            keystr = parser.get('initial_vars', 'keystr')
+            regstr = parser.get('initial_vars', 'regstr')
+            blackstr = parser.get('initial_vars', 'blackstr')
+
+            keylist = []
+            reglist = []
+            blacklist = []
+            for x in keystr.split(","):
+                keylist.append(x)
+            for x in regstr.split(","):
+                reglist.append(x)
+            for x in blackstr.split(","):
+                blacklist.append(x)
             break
         else:
             lib.PrintError("No such file found")
@@ -459,8 +488,7 @@ def load_config():
         'reglisting': reglisting,
         'reglist': reglist,
         'keylisting': keylisting,
-        'key_list': key_list,
-        'arch_mode': arch_mode,
+        'keylist': keylist,
         'malware_scanning': malware_scanning,
     }
     return vars_dict
@@ -483,6 +511,7 @@ def main():
         elif configchoice.lower() in ['no', 'n']:
             vars_dict = manual_setup()
         Non_API_Search(vars_dict)
+
 
 if __name__ == "__main__":
     main()
