@@ -41,7 +41,7 @@ def print_success(msg):
     else:
         print('\033[1;32m[+]\033[1;m ' + msg)
 
-def PrintStatus(msg):
+def print_status(msg):
     if os.name == 'nt':
         print('[*] ' + msg)
     else:
