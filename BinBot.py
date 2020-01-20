@@ -86,39 +86,36 @@ def parameter_connect(proch):
                 print_genericerror()
                 continue
 
-def archive_engine(prescan_text, proch, vars_dict):
+
+def archive_engine(prescan_text, proch, vars_dict, search_rules):
     if vars_dict['yara_scanning'] is True:
-        matches = (vars_dict['search_rules']).match(data=f"{prescan_text}")
-        if type(matches) is dict:
-            for rule in matches.keys():
-                if rule == 'blacklist':
-                    lib.print_status(f"Blacklisted term detected...[{datetime.now().strftime('%X')}]")
-                    break
+        matches = search_rules.match(data=prescan_text)
+        if matches:
+            if matches[0].rule == 'blacklist':
+                lib.print_status(f"Blacklisted term detected: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
+            else:
+                if matches[0].rule == 'b64Artifacts':
+                    lib.print_success(f"Base64 Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
+                    with codecs.open(f"{vars_dict['workpath']}[{((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}]{proch}.b64", 'w+', 'utf-8') as savefile:
+                        savefile.write(prescan_text)
+                elif matches[0].rule == 'powershellArtifacts':
+                    lib.print_success(f"Powershell Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
+                    with codecs.open(f"{vars_dict['workpath']}[{((matches[0]).strings[0])[2].decode('UTF-8')}]{proch}.ps1", 'w+', 'utf-8') as savefile:
+                        savefile.write(prescan_text)
+                elif matches[0].rule == 'keywords':
+                    lib.print_success(f"Keyword found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
+                    with codecs.open(f"{vars_dict['workpath']}[{((matches[0]).strings[0])[2].decode('UTF-8')}]{proch}.txt", 'w+', 'utf-8') as savefile:
+                        savefile.write(prescan_text)
                 else:
-                    for item in matches[rule]:
-                        for string in item['strings']:
-                            if rule == 'b64Artifacts':
-                                lib.print_success(f"Base64 Artifact Found: [{string['data']}] [{datetime.now().strftime('%X')}]")
-                                with codecs.open(f"{vars_dict['workpath']}{str(string['identifier'])}{proch}.b64", 'w+', 'utf-8') as savefile:
-                                    savefile.write(prescan_text)
-                            elif rule == 'powershellArtifacts':
-                                lib.print_success(f"Powershell Artifact Found: [{string['data']}] [{datetime.now().strftime('%X')}]")
-                                with codecs.open(f"{vars_dict['workpath']}{str(string['data'])}{proch}.ps1", 'w+', 'utf-8') as savefile:
-                                    savefile.write(prescan_text)
-                            elif rule == 'keywords':
-                                lib.print_success(f"Keyword found: [{string['data']}] [{datetime.now().strftime('%X')}]")
-                                with codecs.open(f"{vars_dict['workpath']}{str(string['data'])}{proch}.txt", 'w+', 'utf-8') as savefile:
-                                    savefile.write(prescan_text)
-                            else:
-                                with codecs.open(f"{vars_dict['workpath']}{str(string['data'])}{proch}.txt", 'w+', 'utf-8') as savefile:
-                                    savefile.write(prescan_text)
+                    with codecs.open(f"{vars_dict['workpath']}[{((matches[0]).strings[0])[2].decode('UTF-8')}]{proch}.txt", 'w+', 'utf-8') as savefile:
+                        savefile.write(prescan_text)
         else:
             with codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8") as savefile:
                 savefile.write(prescan_text)
     else:
         with codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8") as savefile:
             savefile.write(prescan_text)
-def Non_API_Search(vars_dict):
+def Non_API_Search(vars_dict, search_rules):
     arch_runs = 0
     while True:
         if arch_runs > 0:
@@ -170,7 +167,7 @@ def Non_API_Search(vars_dict):
                 ]
                 for tag in taglist:
                     unprocessed = str(unprocessed).replace(tag, "") # process the raw text by removing html tags
-                archive_engine(unprocessed, proch, vars_dict)
+                archive_engine(unprocessed, proch, vars_dict, search_rules)
                 arch_runs += 1
                 sleep(vars_dict['limiter'])
                 continue
@@ -296,9 +293,9 @@ def load_config():
         'limiter': limiter,
         'cooldown': cooldown,
         'yara_scanning': yara_scanning,
-        'search_rules': search_rules,
+        #'search_rules': search_rules,
     }
-    return vars_dict
+    return vars_dict, search_rules
 
 # Main
 def main():
@@ -317,13 +314,13 @@ def main():
             lib.print_error("Invalid Input.")
             continue
         elif configchoice.lower() in ['y', 'yes']:
-            vars_dict = load_config()
+            vars_dict, search_rules = load_config()
             break
         elif configchoice.lower() in ['no', 'n']:
             vars_dict = manual_setup()
             break
     try:
-        Non_API_Search(vars_dict)
+        Non_API_Search(vars_dict, search_rules)
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled at {datetime.now().strftime('%X')}")
 
