@@ -18,7 +18,7 @@ The keywords are:
 * mega.nz
 * dropbox.com
 
-**Planned Features:**
+## Planned Features:
 
 * Pastebin API support (WORK IN PROGRESS)
 * Logging system
