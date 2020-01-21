@@ -20,10 +20,12 @@ The keywords are:
 
 ## Planned Features:
 
-* Pastebin API support (WORK IN PROGRESS)
+* pastebin API support (WORK IN PROGRESS)
 * Logging system
 * Malware file hash identification
 
 
 ## TODO:
-- Maintainence and Bug Fixes
+- Fix quoted filenames for matched files
+- Fix b64 matches not being saved as .b64 files
+- Fix blacklisted files still when they match other rules
