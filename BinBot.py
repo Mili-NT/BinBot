@@ -86,10 +86,9 @@ def parameter_connect(proch):
                 print_genericerror()
                 continue
 
-
-def archive_engine(prescan_text, proch, vars_dict, search_rules):
+def archive_engine(prescan_text, proch, vars_dict):
     if vars_dict['yara_scanning'] is True:
-        matches = search_rules.match(data=prescan_text)
+        matches = vars_dict['search_rules'].match(data=prescan_text)
         if matches:
             if matches[0].rule == 'blacklist':
                 lib.print_status(f"Blacklisted term detected: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
@@ -115,7 +114,7 @@ def archive_engine(prescan_text, proch, vars_dict, search_rules):
     else:
         with codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8") as savefile:
             savefile.write(prescan_text)
-def Non_API_Search(vars_dict, search_rules):
+def Non_API_Search(vars_dict):
     arch_runs = 0
     while True:
         if arch_runs > 0:
@@ -167,7 +166,7 @@ def Non_API_Search(vars_dict, search_rules):
                 ]
                 for tag in taglist:
                     unprocessed = str(unprocessed).replace(tag, "") # process the raw text by removing html tags
-                archive_engine(unprocessed, proch, vars_dict, search_rules)
+                archive_engine(unprocessed, proch, vars_dict)
                 arch_runs += 1
                 sleep(vars_dict['limiter'])
                 continue
@@ -262,6 +261,18 @@ yara_scanning = {yara_scanning}""")
         'yara_scanning': yara_scanning,
         'search_rules': search_rules,
     }
+    try:
+        print("\n")
+        for x in vars_dict.keys():
+            if x != 'search_rules':
+                if name == 'nt':
+                    print(f"{x}]: {str(vars_dict[x])}")
+                    print("---------------------")
+                else:
+                    print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[3;37;42m{str(vars_dict[x])}\x1b[0m")
+                    print("\x1b[94m---------------------\x1b[0m")
+    finally:
+        print("\n")
     return vars_dict
 def load_config():
     parser = ConfigParser()
@@ -293,13 +304,25 @@ def load_config():
         'limiter': limiter,
         'cooldown': cooldown,
         'yara_scanning': yara_scanning,
-        #'search_rules': search_rules,
+        'search_rules': search_rules
     }
-    return vars_dict, search_rules
+    try:
+        print("\n")
+        for x in vars_dict.keys():
+            if x != 'search_rules':
+                if name == 'nt':
+                    print(f"{x}]: {str(vars_dict[x])}")
+                    print("---------------------")
+                else:
+                    print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[3;37;42m{str(vars_dict[x])}\x1b[0m")
+                    print("\x1b[94m---------------------\x1b[0m")
+    finally:
+        print("\n")
+    return vars_dict
 
 # Main
 def main():
-    print("""
+    lib.print_title("""
     _________________________________________
     [                                       ]
     [                                       ]
@@ -314,15 +337,16 @@ def main():
             lib.print_error("Invalid Input.")
             continue
         elif configchoice.lower() in ['y', 'yes']:
-            vars_dict, search_rules = load_config()
+            vars_dict = load_config()
             break
         elif configchoice.lower() in ['no', 'n']:
             vars_dict = manual_setup()
             break
     try:
-        Non_API_Search(vars_dict, search_rules)
+        Non_API_Search(vars_dict)
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled at {datetime.now().strftime('%X')}")
 
 if __name__ == "__main__":
     main()
+

@@ -65,25 +65,13 @@ def print_input(msg):
     else:
         return input('\033[1;33m[*]\033[1;m ' + msg + ": ")
 
-def is_ip_address(address):
-    try:
-        socket.inet_aton(address)
-        if address.count('.') == 3:
-            return True
-    except socket.error:
-        return False
+def print_title(msg):
+    if os.name == 'nt':
+        print(msg)
+    else:
+        print('\033[35m' + msg)
 
-def validate_ip(address):
-    address_chunks = address.split('.')
-    if len(address_chunks) != 4:
-        return False
-    for chunk in address_chunks:
-        if not chunk.isdigit():
-            return False
-        chunk_int = int(chunk)
-        if chunk_int < 0 or chunk_int > 255:
-            return False
-    return True
 
 def random_headers():
     return { 'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
+
