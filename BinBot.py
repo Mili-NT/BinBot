@@ -269,7 +269,7 @@ yara_scanning = {yara_scanning}""")
                     print(f"{x}]: {str(vars_dict[x])}")
                     print("---------------------")
                 else:
-                    print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[3;37;42m{str(vars_dict[x])}\x1b[0m")
+                    print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
                     print("\x1b[94m---------------------\x1b[0m")
     finally:
         print("\n")
@@ -314,7 +314,7 @@ def load_config():
                     print(f"{x}]: {str(vars_dict[x])}")
                     print("---------------------")
                 else:
-                    print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[3;37;42m{str(vars_dict[x])}\x1b[0m")
+                    print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
                     print("\x1b[94m---------------------\x1b[0m")
     finally:
         print("\n")
