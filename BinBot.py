@@ -95,18 +95,18 @@ def archive_engine(prescan_text, proch, vars_dict):
             else:
                 if matches[0].rule == 'b64Artifacts':
                     lib.print_success(f"Base64 Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
-                    with codecs.open(f"{vars_dict['workpath']}[{((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}]{proch}.b64", 'w+', 'utf-8') as savefile:
+                    with codecs.open(f"{vars_dict['workpath']}({((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}){proch}.b64", 'w+', 'utf-8') as savefile:
                         savefile.write(prescan_text)
                 elif matches[0].rule == 'powershellArtifacts':
                     lib.print_success(f"Powershell Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
-                    with codecs.open(f"{vars_dict['workpath']}[{((matches[0]).strings[0])[2].decode('UTF-8')}]{proch}.ps1", 'w+', 'utf-8') as savefile:
+                    with codecs.open(f"{vars_dict['workpath']}({((matches[0]).strings[0])[2].decode('UTF-8')}){proch}.ps1", 'w+', 'utf-8') as savefile:
                         savefile.write(prescan_text)
                 elif matches[0].rule == 'keywords':
                     lib.print_success(f"Keyword found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
-                    with codecs.open(f"{vars_dict['workpath']}[{((matches[0]).strings[0])[2].decode('UTF-8')}]{proch}.txt", 'w+', 'utf-8') as savefile:
+                    with codecs.open(f"{vars_dict['workpath']}({((matches[0]).strings[0])[2].decode('UTF-8')}){proch}.txt", 'w+', 'utf-8') as savefile:
                         savefile.write(prescan_text)
                 else:
-                    with codecs.open(f"{vars_dict['workpath']}[{((matches[0]).strings[0])[2].decode('UTF-8')}]{proch}.txt", 'w+', 'utf-8') as savefile:
+                    with codecs.open(f"{vars_dict['workpath']}({((matches[0]).strings[0])[2].decode('UTF-8')}){proch}.txt", 'w+', 'utf-8') as savefile:
                         savefile.write(prescan_text)
         else:
             with codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8") as savefile:
