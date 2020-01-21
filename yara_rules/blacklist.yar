@@ -9,6 +9,7 @@
         $b6 = "serfish" nocase
         $b7 = "Technic Launcher is starting"
         $b8 = "[Server Thread/WARN]"
+        $b9 = "SimC Addon"
     condition:
         any of them
 
