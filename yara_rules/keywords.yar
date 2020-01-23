@@ -6,7 +6,7 @@ rule keywords
         $pastebin = "pastebin.com" wide ascii nocase
         $pastebin_raw = "pastebin.com/raw" wide ascii nocase
         $mediafire = "mediafire.com" wide ascii nocase
-        $sha256 = "sha265" wide ascii nocase
+        $sha256 = "sha256" wide ascii nocase
     condition:
         any of them
 
