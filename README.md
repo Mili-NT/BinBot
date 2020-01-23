@@ -16,7 +16,8 @@ Make sure to customize your blacklist.yar and keywords.yar file. By defualt the 
 The keywords are:
 * drive.google.com
 * mega.nz
-* dropbox.com
+* pastebin.com
+* pastebin.com/raw
 
 ## Planned Features:
 
