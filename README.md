@@ -13,12 +13,6 @@ Make sure to customize your blacklist.yar and keywords.yar file. By defualt the 
 * serfish/ssh bitcoin scams
 * chegg links
 
-The keywords are:
-* drive.google.com
-* mega.nz
-* pastebin.com
-* pastebin.com/raw
-
 ## Planned Features:
 
 * pastebin API support (WORK IN PROGRESS)
