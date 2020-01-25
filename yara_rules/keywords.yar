@@ -5,7 +5,9 @@ rule keywords
         $mega_nz = "mega.nz" wide ascii nocase
         $mediafire = "mediafire.com" wide ascii nocase
         $rawgithub = "raw.githubusercontent.com" wide ascii nocase
-        $magnet = "magnet:?xt=urn:"
+        $anonfile = "anonfile.com"
+        $zippyshare = "zippyshare.com"
+        $uploadfiles = "uploadfiles.io"
         $ghostbin = "ghostbin.com"
         $throwbin = "throwbin.com"
     condition:
