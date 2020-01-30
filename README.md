@@ -17,9 +17,8 @@ Make sure to customize your blacklist.yar and keywords.yar file. By defualt the 
 
 * pastebin API support (WORK IN PROGRESS)
 * Logging system
-* Malware file hash identification
+* Malware file hash identification (Alternatively: VT API integration)
 
 
 ## TODO:
-- Fix b64 matches not being saved as .b64 files
 - Fix blacklisted files still saving when they match other rules
