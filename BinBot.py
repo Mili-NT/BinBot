@@ -91,8 +91,6 @@ def archive_engine(prescan_text, proch, vars_dict):
         matches = vars_dict['search_rules'].match(data=prescan_text)
         if matches:
             if matches[0].rule == 'blacklist':
-                with open("test.txt", 'w') as f:
-                    f.write(proch + '\n')
                 lib.print_status(f"Blacklisted term detected: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
             else:
                 if matches[0].rule == 'b64Artifacts':
