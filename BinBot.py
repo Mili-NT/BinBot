@@ -91,6 +91,8 @@ def archive_engine(prescan_text, proch, vars_dict):
         matches = vars_dict['search_rules'].match(data=prescan_text)
         if matches:
             if matches[0].rule == 'blacklist':
+                with open("test.txt", 'w') as f:
+                    f.write(proch + '\n')
                 lib.print_status(f"Blacklisted term detected: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
             else:
                 if matches[0].rule == 'b64Artifacts':
@@ -109,7 +111,7 @@ def archive_engine(prescan_text, proch, vars_dict):
                     with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[2].decode('UTF-8')}_{proch}.txt", 'w+', 'utf-8') as savefile:
                         savefile.write(prescan_text)
         else:
-            with codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8") as savefile:
+            with codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', 'utf-8') as savefile:
                 savefile.write(prescan_text)
     else:
         with codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8") as savefile:
@@ -228,11 +230,15 @@ def manual_setup():
     if yara_scanning is True:
         yara_dir = f"{getcwd()}/yara_rules"
         search_rules = yara.compile(
-            filepaths={f.replace(".yar", ""): path.join(yara_dir, f) for f in listdir(yara_dir) if
+            filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/general_rules/', f) for f in listdir(yara_dir) if
                        path.isfile(path.join(yara_dir, f)) and f.endswith(".yar")})
-        lib.print_success("Rules compiled... ")
+        binary_rules = yara.compile(
+            filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/binary_rules/', f) for f in listdir(yara_dir) if
+                       path.isfile(path.join(yara_dir, f)) and f.endswith(".yar")})
+        lib.print_success(f"{len(search_rules) + len(binary_rules)} rules compiled... ")
     else:
         search_rules = []
+        binary_rules = []
     # Saving
     while True:
         savechoice = lib.print_input('Save configuration to file for repeated use? [y]/[n]')
@@ -260,11 +266,12 @@ yara_scanning = {yara_scanning}""")
         'cooldown': cooldown,
         'yara_scanning': yara_scanning,
         'search_rules': search_rules,
+        'binary_rules': binary_rules,
     }
     try:
         print("\n")
         for x in vars_dict.keys():
-            if x != 'search_rules':
+            if x != 'search_rules' and x != 'binary_rules':
                 if name == 'nt':
                     print(f"{x}]: {str(vars_dict[x])}")
                     print("---------------------")
@@ -291,9 +298,13 @@ def load_config():
             yara_scanning = parser.getboolean('initial_vars', 'yara_scanning')
             if yara_scanning is True:
                 yara_dir = f"{getcwd()}/yara_rules"
-                search_rules = yara.compile(
-                    filepaths={f.replace(".yar", ""): path.join(yara_dir, f) for f in listdir(yara_dir) if
-                               path.isfile(path.join(yara_dir, f)) and f.endswith(".yar")})
+                search_rules = yara.compile(filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/general_rules/', f) for f in listdir(f'{yara_dir}/general_rules/') if
+                                path.isfile(path.join(f'{yara_dir}/general_rules/', f)) and f.endswith(".yar")})
+                binary_rules = yara.compile(filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/binary_rules/', f) for f in listdir(f'{yara_dir}/binary_rules/') if
+                                path.isfile(path.join(f'{yara_dir}/binary_rules/', f)) and f.endswith(".yar")})
+            else:
+                search_rules = []
+                binary_rules = []
             break
         else:
             lib.print_error("No such file found")
@@ -304,12 +315,13 @@ def load_config():
         'limiter': limiter,
         'cooldown': cooldown,
         'yara_scanning': yara_scanning,
-        'search_rules': search_rules
+        'search_rules': search_rules,
+        'binary_rules': binary_rules,
     }
     try:
         print("\n")
         for x in vars_dict.keys():
-            if x != 'search_rules':
+            if x != 'search_rules' and x != 'binary_rules':
                 if name == 'nt':
                     print(f"{x}]: {str(vars_dict[x])}")
                     print("---------------------")
