@@ -19,11 +19,13 @@
 
 import re
 import lib
+import gzip
 import yara
 import codecs
 import requests
 from time import sleep
 from datetime import datetime
+from base64 import b64decode
 from bs4 import BeautifulSoup
 from sys import path as syspath
 from configparser import ConfigParser
@@ -95,8 +97,17 @@ def archive_engine(prescan_text, proch, vars_dict):
             else:
                 if matches[0].rule == 'b64Artifacts':
                     lib.print_success(f"Base64 Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
-                    with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}_{proch}.b64", 'w+', 'utf-8') as savefile:
-                        savefile.write(prescan_text)
+                    if ((matches[0]).strings[0])[2].decode('UTF-8') == "H4sI":
+                        with codecs.open(f"{vars_dict['workpath']}{proch}", 'w+', 'utf-8') as savefile:
+                            savefile.seek(0)
+                            savefile.write(b64decode(prescan_text))
+                            with gzip.open(f"{vars_dict['workpath']}{proch}", 'rb') as f:
+                                file_content = f.read()
+                                savefile.truncate()
+                                savefile.write(file_content)
+                    else:
+                        with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}_{proch}", 'w+', 'utf-8') as savefile:
+                            savefile.write(b64decode(prescan_text))
                 elif matches[0].rule == 'powershellArtifacts':
                     lib.print_success(f"Powershell Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
                     with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[2].decode('UTF-8')}_{proch}.ps1", 'w+', 'utf-8') as savefile:
