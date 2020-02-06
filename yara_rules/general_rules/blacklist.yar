@@ -11,6 +11,7 @@
         $b8 = "[Server Thread/WARN]" nocase
         $b9 = "SimC Addon"
         $b10 = "M3U" nocase
+        $b11 = "fortnite" nocase
     condition:
         any of them
 

@@ -29,10 +29,9 @@ from base64 import b64decode
 from bs4 import BeautifulSoup
 from sys import path as syspath
 from configparser import ConfigParser
-from os import path, listdir, name, getcwd
+from os import path, listdir, name, getcwd, remove, system
 
 # Author: Mili
-# Python Version: 3.6.0
 # No API key needed
 
 # Functions
@@ -97,14 +96,16 @@ def archive_engine(prescan_text, proch, vars_dict):
             else:
                 if matches[0].rule == 'b64Artifacts':
                     lib.print_success(f"Base64 Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
+                    # TODO: More efficient way to do this. Preferably taking 3 file operations down to 1.
+                    # Also, what is more overhead: importing the gzip library, or a syscall to gunzip?
                     if ((matches[0]).strings[0])[2].decode('UTF-8') == "H4sI":
-                        with codecs.open(f"{vars_dict['workpath']}{proch}", 'w+', 'utf-8') as savefile:
-                            savefile.seek(0)
+                        with codecs.open(f"/tmp/{proch}", 'w+', 'utf-8') as savefile:
                             savefile.write(b64decode(prescan_text))
-                            with gzip.open(f"{vars_dict['workpath']}{proch}", 'rb') as f:
-                                file_content = f.read()
-                                savefile.truncate()
-                                savefile.write(file_content)
+                        with gzip.open(f"/tmp/{proch}", 'rb') as f:
+                            file_content = f.read()
+                        with open(f"{vars_dict['workpath']}{proch}.file", 'wb') as savefile:
+                            savefile.write(file_content)
+                        remove(f"/tmp/{proch}")
                     else:
                         with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}_{proch}", 'w+', 'utf-8') as savefile:
                             savefile.write(b64decode(prescan_text))
@@ -239,12 +240,11 @@ def manual_setup():
     if yara_scanning is True:
         yara_dir = f"{getcwd()}/yara_rules"
         search_rules = yara.compile(
-            filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/general_rules/', f) for f in listdir(yara_dir) if
+            filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/general_rules/', f) for f in listdir(f'{yara_dir}/general_rules/') if
                        path.isfile(path.join(yara_dir, f)) and f.endswith(".yar")})
         binary_rules = yara.compile(
-            filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/binary_rules/', f) for f in listdir(yara_dir) if
+            filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/binary_rules/', f) for f in listdir(f'{yara_dir}/binary_rules/') if
                        path.isfile(path.join(yara_dir, f)) and f.endswith(".yar")})
-        lib.print_success(f"{len(search_rules) + len(binary_rules)} rules compiled... ")
     else:
         search_rules = []
         binary_rules = []
