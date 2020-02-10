@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+import os
+import sys
+import random
+
+
+def main(runs):
+    files = [f"{os.getcwd()}/{f}" for f in os.listdir(os.getcwd()) if os.path.isfile(f)]
+    for _ in range(int(runs)):
+        os.system(f"nano {random.choice(files)}")
+
+if __name__ == "__main__":
+    try:
+        main(sys.argv[1])
+    except IndexError:
+        print(f"Usage: {sys.argv[0]} <runs>")
