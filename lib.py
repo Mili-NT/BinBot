@@ -71,7 +71,6 @@ def print_title(msg):
     else:
         print(f"\033[35m {msg}")
 
-
 def random_headers():
     return { 'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
 
