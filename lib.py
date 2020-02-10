@@ -18,7 +18,6 @@
 # -----------------------------------------------------------------------
 
 import os
-import socket
 import requests
 from random import choice
 
