@@ -20,6 +20,7 @@
 import os
 import requests
 from random import choice
+from datetime import datetime
 
 user_agents = [
 	'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
@@ -35,40 +36,40 @@ user_agents = [
 ]
 
 def print_success(msg):
-    if os.name == 'nt':
-        print('[+] ' + msg)
+    if os.name == "nt":
+        print(f"[+] {msg}")
     else:
-        print('\033[1;32m[+]\033[1;m ' + msg)
+        print(f"\033[1;32m[+]\033[1;m [{datetime.now().strftime('%X')}] {msg}")
 
 def print_status(msg):
-    if os.name == 'nt':
-        print('[*] ' + msg)
+    if os.name == "nt":
+        print(f"[*] {msg}")
     else:
-        print('\033[1;34m[*]\033[1;m ' + msg)
+        print(f"\033[1;34m[*]\033[1;m [{datetime.now().strftime('%X')}] {msg}")
 
 def print_failure(msg):
-    if os.name == 'nt':
-        print('[-] ' + msg)
+    if os.name == "nt":
+        print(f"[-] {msg}")
     else:
-        print('\033[1;31m[-]\033[1;m ' + msg)
+        print(f"\033[1;31m[-]\033[1;m [{datetime.now().strftime('%X')}] {msg}")
 
 def print_error(msg):
-    if os.name == 'nt':
-        print('[!] ' + msg)
+    if os.name == "nt":
+        print(f"[!] {msg}")
     else:
-        print('\033[1;31m[!]\033[1;m ' + msg)
+        print(f"\033[1;31m[!]\033[1;m [{datetime.now().strftime('%X')}] {msg}")
 
 def print_input(msg):
-    if os.name == 'nt':
-        return input('[?] ' + msg + ": ")
+    if os.name == "nt":
+        return input(f"[?] {msg}: ")
     else:
-        return input('\033[1;33m[*]\033[1;m ' + msg + ": ")
+        return input(f"\033[1;33m[*]\033[1;m {msg}: ")
 
 def print_title(msg):
-    if os.name == 'nt':
+    if os.name == "nt":
         print(msg)
     else:
-        print('\033[35m' + msg)
+        print(f"\033[35m {msg}")
 
 
 def random_headers():

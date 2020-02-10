@@ -87,10 +87,10 @@ def archive_engine(prescan_text, proch, vars_dict):
         matches = vars_dict['search_rules'].match(data=prescan_text)
         if matches:
             if matches[0].rule == 'blacklist':
-                lib.print_status(f"Blacklisted term detected: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
+                lib.print_status(f"Blacklisted term detected: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
             else:
                 if matches[0].rule == 'b64Artifacts':
-                    lib.print_success(f"Base64 Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
+                    lib.print_success(f"Base64 Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
                     decoded_content = b64decode(prescan_text)
                     if ((matches[0]).strings[0])[2].decode('UTF-8') == "H4sI":
                         decompressed_string = gzip.decompress(bytes(decoded_content, 'utf-8'))
@@ -100,11 +100,11 @@ def archive_engine(prescan_text, proch, vars_dict):
                         with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}_{proch}.txt", 'w+', 'utf-8') as savefile:
                             savefile.write(decoded_content)
                 elif matches[0].rule == 'powershellArtifacts':
-                    lib.print_success(f"Powershell Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
+                    lib.print_success(f"Powershell Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
                     with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[2].decode('UTF-8')}_{proch}.ps1", 'w+', 'utf-8') as savefile:
                         savefile.write(prescan_text)
                 elif matches[0].rule == 'keywords':
-                    lib.print_success(f"Keyword found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
+                    lib.print_success(f"Keyword found: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
                     with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[2].decode('UTF-8')}_{proch}.txt", 'w+', 'utf-8') as savefile:
                         savefile.write(prescan_text)
                 else:
@@ -122,41 +122,41 @@ def Non_API_Search(vars_dict):
         if arch_runs > 0:
             lib.print_status(f"Runs: {arch_runs}")
             if arch_runs >= vars_dict['stop_input'] and vars_dict['stop_input'] is False:
-                lib.print_success(f"Runs Complete, Operation Finished... [{datetime.now().strftime('%X')}]")
+                lib.print_success(f"Runs Complete, Operation Finished...")
                 exit()
             else:
-                lib.print_status(f"Pastes fetched, cooling down for {vars_dict['cooldown']} seconds... [{datetime.now().strftime('%X')}]")
+                lib.print_status(f"Pastes fetched, cooling down for {vars_dict['cooldown']} seconds...")
                 sleep(vars_dict['cooldown']/2)
-                lib.print_status(f"Halfway through at [{datetime.now().strftime('%X')}]")
+                lib.print_status(f"Halfway through cooldown")
                 sleep(vars_dict['cooldown']/2)
-                lib.print_status(f"resuming... [{datetime.now().strftime('%X')}]")
+                lib.print_status(f"resuming...")
         if arch_runs < vars_dict['stop_input'] or vars_dict['stop_input'] is True:
             arch_page = archive_connect()
             arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
             sleep(2)
-            lib.print_status(f"Getting archived pastes... [{datetime.now().strftime('%X')}]")
+            lib.print_status(f"Getting archived pastes...")
             if 'access denied' in arch_page.text:
-                lib.print_error(f"IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour... [{datetime.now().strftime('%X')}]")
+                lib.print_error(f"IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour...")
                 sleep(vars_dict['cooldown'])
-                lib.print_status(f"Process resumed... [{datetime.now().strftime('%X')}]")
+                lib.print_status(f"Process resumed...")
                 continue
             else:
                 pass
-            lib.print_status(f"Finding params...[{datetime.now().strftime('%X')}]")
+            lib.print_status(f"Finding params...")
             table = arch_soup.find("table", class_="maintable") # Fetch the table of recent pastes
             while True:
                 try:
                     tablehrefs = table.findAll('a', href=True) # Find the <a> tags for every paste
                     break
                 except AttributeError:
-                    lib.print_error(f"IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour... [{datetime.now().strftime('%X')}]")
+                    lib.print_error(f"IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour...")
                     sleep(vars_dict['cooldown'])
-                    lib.print_error(f"Process resumed... [{datetime.now().strftime('%X')}]")
+                    lib.print_error(f"Process resumed...")
                     continue
             for h in tablehrefs:
                 proch = (h['href']).replace("/", "") # fetch the URL param for each paste
-                lib.print_success("params fetched... [" + str(datetime.now().strftime('%X')) + "]")
-                lib.print_status(f"Acting on param {proch}... [{datetime.now().strftime('%X')}]")
+                lib.print_success("params fetched...")
+                lib.print_status(f"Acting on param {proch}...")
                 full_archpage, full_arch_url = parameter_connect(proch)
                 item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
                 unprocessed = item_soup.find('textarea') # Fetch the raw text in the paste.
@@ -173,7 +173,7 @@ def Non_API_Search(vars_dict):
                 sleep(vars_dict['limiter'])
                 continue
         else:
-            lib.print_success(f"Operation Finished... [{datetime.now().strftime('%X')}]")
+            lib.print_success(f"Operation Finished...")
             break
 
 def manual_setup():
@@ -356,7 +356,7 @@ def main():
     try:
         Non_API_Search(vars_dict)
     except KeyboardInterrupt:
-        lib.print_status(f"Operation cancelled at {datetime.now().strftime('%X')}")
+        lib.print_status(f"Operation cancelled...")
 
 if __name__ == "__main__":
     main()
