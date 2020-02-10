@@ -14,11 +14,8 @@ Make sure to customize your blacklist.yar and keywords.yar file. By defualt the 
 * chegg links
 
 ## Planned Features:
-
-* pastebin API support (WORK IN PROGRESS)
 * Logging system
 * Malware file hash identification (Alternatively: VT API integration)
 
 
 ## TODO:
-- Fix blacklisted files still saving when they match other rules
