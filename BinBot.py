@@ -24,12 +24,12 @@ import yara
 import codecs
 import requests
 from time import sleep
-from datetime import datetime
 from base64 import b64decode
+from datetime import datetime
 from bs4 import BeautifulSoup
 from sys import path as syspath
 from configparser import ConfigParser
-from os import path, listdir, name, getcwd, remove, system
+from os import path, listdir, name, getcwd
 
 # Author: Mili
 # No API key needed
@@ -46,12 +46,7 @@ def archive_connect():
     while True:
         try:
             archive_page = requests.get(archive_url, headers=lib.random_headers())
-            today = datetime.now().strftime('%x')
-            now = datetime.now().strftime('%X')
-            creationdate = today + '~' + now
-            identifier = creationdate.replace("/", ".").replace(":", "-")
-            archive_filename = "[" + str(identifier) + "]"
-            return archive_page, archive_filename
+            return archive_page
         except Exception as e:
             if e is requests.exceptions.ConnectionError:
                 print_connecterror()
@@ -136,7 +131,7 @@ def Non_API_Search(vars_dict):
                 sleep(vars_dict['cooldown']/2)
                 lib.print_status(f"resuming... [{datetime.now().strftime('%X')}]")
         if arch_runs < vars_dict['stop_input'] or vars_dict['stop_input'] is True:
-            arch_page, arch_filename = archive_connect()
+            arch_page = archive_connect()
             arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
             sleep(2)
             lib.print_status(f"Getting archived pastes... [{datetime.now().strftime('%X')}]")
