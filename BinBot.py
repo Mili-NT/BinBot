@@ -96,19 +96,20 @@ def archive_engine(prescan_text, proch, vars_dict):
             else:
                 if matches[0].rule == 'b64Artifacts':
                     lib.print_success(f"Base64 Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
+                    decoded_content = b64decode(prescan_text)
                     # TODO: More efficient way to do this. Preferably taking 3 file operations down to 1.
                     # Also, what is more overhead: importing the gzip library, or a syscall to gunzip?
                     if ((matches[0]).strings[0])[2].decode('UTF-8') == "H4sI":
                         with codecs.open(f"/tmp/{proch}", 'w+', 'utf-8') as savefile:
-                            savefile.write(b64decode(prescan_text))
+                            savefile.write(decoded_content)
                         with gzip.open(f"/tmp/{proch}", 'rb') as f:
                             file_content = f.read()
                         with open(f"{vars_dict['workpath']}{proch}.file", 'wb') as savefile:
                             savefile.write(file_content)
                         remove(f"/tmp/{proch}")
                     else:
-                        with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}_{proch}", 'w+', 'utf-8') as savefile:
-                            savefile.write(b64decode(prescan_text))
+                        with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}_{proch}.txt", 'w+', 'utf-8') as savefile:
+                            savefile.write(decoded_content)
                 elif matches[0].rule == 'powershellArtifacts':
                     lib.print_success(f"Powershell Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}] at [{datetime.now().strftime('%X')}]")
                     with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[2].decode('UTF-8')}_{proch}.ps1", 'w+', 'utf-8') as savefile:
