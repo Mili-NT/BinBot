@@ -13,6 +13,7 @@ Make sure to customize your blacklist.yar and keywords.yar file. By default the 
 * serfish/ssh bitcoin scams
 * chegg links
 
+
 ## Planned Features:
 * Logging system
 * External services API integration (VT & HybridAnalysis)
