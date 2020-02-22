@@ -30,13 +30,10 @@ AND its got a personality
 """
 
 
-def main(filetype):
-    print(f'Links loaded: {list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]})[0]}')
+def main(y):
+    print(f'Links loaded: {list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]})[0]}')
     sleep(0.5)
-    for x in (({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]})[0]])[0])[1]:
-        os.system(f'{(({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]})[0]])[0])[0]}{x}' + ' && echo %s' % (({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]})[0]])[1]))
-if __name__ == "__main__":
-    try:
-        main(sys.argv[1])
-    except IndexError:
-        print(f"Usage: {sys.argv[0]} <starting characters of link>")
+    for x in (({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]})[0]])[0])[1]:
+        os.system(f'{(({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]})[0]])[0])[0]}{x}' + ' && echo \%s' % (({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]})[0]])[1]))
+
+main(sys.argv[1]) if __name__ == "__main__" and (1 < len(sys.argv) < 2) else print(f"Usage: {sys.argv[0]} <starting characters of file>")
