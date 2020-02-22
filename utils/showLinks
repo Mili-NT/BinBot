@@ -16,27 +16,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------
-import os
-import sys
 
-'''
-I got pissed trying to do `cat mega*` to get all mega links so I made this
+"""
+So I know what you're probably thinking: 'what kind of god awful crime against humanity is this'
+But hear me out
 
-prints out each file and then a newline
+Its simple:
+1. Give it a word (such as mega)
+2. It will print the contents of all files in the current directory that begin with that word (mega1.txt, megahfn.txt)
+3. It prints a newline
 
-usage: showLinks <starting characters of file>
-ex: showLinks mega
-'''
+AND its got a personality
+"""
+
 
 def main(filetype):
-    files = [f for f in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), f))]
-    for i in files:
-        if i.lower().startswith(filetype.lower()):
-            with open(i, 'r') as f:
-                print(f.read())
-                print("\n")
+    print(f'Links loaded: {list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]})[0]}')
+    sleep(0.5)
+    for x in (({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]})[0]])[0])[1]:
+        os.system(f'{(({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]})[0]])[0])[0]}{x}' + ' && echo %s' % (({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(filetype.lower())]]})[0]])[1]))
 if __name__ == "__main__":
     try:
         main(sys.argv[1])
     except IndexError:
-        print(f"Usage: {sys.argv[0]} <link type>")
+        print(f"Usage: {sys.argv[0]} <starting characters of link>")
