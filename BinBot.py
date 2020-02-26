@@ -29,7 +29,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from sys import path as syspath
 from configparser import ConfigParser
-from os import path, listdir, name, getcwd
+from os import path, listdir
 
 # Author: Mili
 # No API key needed
@@ -86,9 +86,11 @@ def archive_engine(prescan_text, proch, vars_dict):
     if vars_dict['yara_scanning'] is True:
         matches = vars_dict['search_rules'].match(data=prescan_text)
         if matches:
+            # Blacklist:
             if matches[0].rule == 'blacklist':
                 lib.print_status(f"Blacklisted term detected: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
             else:
+                # Base64 Artifacts
                 if matches[0].rule == 'b64Artifacts':
                     lib.print_success(f"Base64 Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
                     decoded_content = b64decode(prescan_text)
@@ -99,6 +101,7 @@ def archive_engine(prescan_text, proch, vars_dict):
                     else:
                         with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}_{proch}.txt", 'w+', 'utf-8') as savefile:
                             savefile.write(decoded_content)
+                # Other Rules:
                 elif matches[0].rule == 'powershellArtifacts':
                     lib.print_success(f"Powershell Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
                     with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[2].decode('UTF-8')}_{proch}.ps1", 'w+', 'utf-8') as savefile:
@@ -181,19 +184,13 @@ def manual_setup():
     while True:
         workpath = lib.print_input("Enter the path you wish to save text documents to (enter curdir for current directory)")
         if workpath.lower() == 'curdir':
-            if name.lower() == 'nt':
-                workpath = getcwd()
-            else:
-                workpath = syspath[0]
+            workpath = syspath[0]
         if path.isdir(workpath):
             lib.print_success("Valid Path...")
             if workpath.endswith('\\') or workpath.endswith('/'):
                 pass
             else:
-                if name.lower == 'nt':
-                    workpath = workpath + str('\\')
-                else:
-                    workpath = workpath + str('/')
+                workpath = workpath + str('/')
             break
         else:
             lib.print_error("Invalid path, check input...")
@@ -228,7 +225,7 @@ def manual_setup():
             break
     # Yara Compiling
     if yara_scanning is True:
-        yara_dir = f"{getcwd()}/yara_rules"
+        yara_dir = f"{syspath[0]}/yara_rules"
         search_rules = yara.compile(
             filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/general_rules/', f) for f in listdir(f'{yara_dir}/general_rules/') if
                        path.isfile(path.join(yara_dir, f)) and f.endswith(".yar")})
@@ -271,12 +268,8 @@ yara_scanning = {yara_scanning}""")
         print("\n")
         for x in vars_dict.keys():
             if x != 'search_rules' and x != 'binary_rules':
-                if name == 'nt':
-                    print(f"{x}]: {str(vars_dict[x])}")
-                    print("---------------------")
-                else:
-                    print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
-                    print("\x1b[94m---------------------\x1b[0m")
+                print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
+                print("\x1b[94m---------------------\x1b[0m")
     finally:
         print("\n")
     return vars_dict
@@ -296,7 +289,7 @@ def load_config():
             cooldown = int(parser.get('initial_vars', 'cooldown'))
             yara_scanning = parser.getboolean('initial_vars', 'yara_scanning')
             if yara_scanning is True:
-                yara_dir = f"{getcwd()}/yara_rules"
+                yara_dir = f"{syspath[0]}/yara_rules"
                 search_rules = yara.compile(filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/general_rules/', f) for f in listdir(f'{yara_dir}/general_rules/') if
                                 path.isfile(path.join(f'{yara_dir}/general_rules/', f)) and f.endswith(".yar")})
                 binary_rules = yara.compile(filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/binary_rules/', f) for f in listdir(f'{yara_dir}/binary_rules/') if
@@ -321,12 +314,8 @@ def load_config():
         print("\n")
         for x in vars_dict.keys():
             if x != 'search_rules' and x != 'binary_rules':
-                if name == 'nt':
-                    print(f"{x}]: {str(vars_dict[x])}")
-                    print("---------------------")
-                else:
-                    print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
-                    print("\x1b[94m---------------------\x1b[0m")
+                print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
+                print("\x1b[94m---------------------\x1b[0m")
     finally:
         print("\n")
     return vars_dict
