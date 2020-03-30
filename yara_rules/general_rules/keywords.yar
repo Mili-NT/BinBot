@@ -8,6 +8,7 @@ rule keywords
         $uploadfiles = "uploadfiles.io"
         $ghostbin = "ghostbin.com"
         $throwbin = "throwbin.com"
+        $raidforums = "raidforums" wide ascii nocase
     condition:
         any of them
 
