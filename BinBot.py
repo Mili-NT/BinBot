@@ -146,10 +146,10 @@ def Non_API_Search(vars_dict):
             else:
                 pass
             lib.print_status(f"Finding params...")
-            table = arch_soup.find("table", class_="maintable") # Fetch the table of recent pastes
+            table = arch_soup.findAll("table", attrs={'class': "maintable"}) # Fetch the table of recent pastes
             while True:
                 try:
-                    tablehrefs = table.findAll('a', href=True) # Find the <a> tags for every paste
+                    tablehrefs = table[0].findAll('a', href=True) # Find the <a> tags for every paste
                     break
                 except AttributeError:
                     lib.print_error(f"IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour...")
