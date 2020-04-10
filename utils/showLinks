@@ -18,22 +18,12 @@
 # -----------------------------------------------------------------------
 
 """
-So I know what you're probably thinking: 'what kind of god awful crime against humanity is this'
-But hear me out
+So you're probably looking at this and thinking, in the words of JonTron: "Why? Why would you do this?"
 
-Its simple:
-1. Give it a word (such as mega)
-2. It will print the contents of all files in the current directory that begin with that word (mega1.txt, megahfn.txt)
-3. It prints a newline
+This script prints all links starting with the argument passed as sys,.arg[1], and prints a newline
 
-AND its got a personality
+It's pretty neat. Like with all utils, chmod +x it and stick it in /usr/local/bin
 """
-
-
-def main(y):
-    print(f'Links loaded: {list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]})[0]}')
-    sleep(0.5)
-    for x in (({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]})[0]])[0])[1]:
-        os.system(f'{(({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]})[0]])[0])[0]}{x}' + ' && echo \%s' % (({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(y.lower())]]})[0]])[1]))
-
-main(sys.argv[1]) if __name__ == "__main__" and (1 < len(sys.argv) < 2) else print(f"Usage: {sys.argv[0]} <starting characters of file>")
+import os
+import sys
+[print(f'Links loaded: {list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]})[0]}'), [os.system(f'{(({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]})[0]])[0])[0]}{x}' + ' && echo %s' % (({len(x):(("cat ", x), "\n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]})[0]])[1])) for x in (({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]})[0]])[0])[1]]] if __name__ == "__main__" and (1 < len(sys.argv) < 3) else print(f"Usage: {sys.argv[0]} <starting characters of file>")
