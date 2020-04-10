@@ -290,10 +290,14 @@ def load_config():
             yara_scanning = parser.getboolean('initial_vars', 'yara_scanning')
             if yara_scanning is True:
                 yara_dir = f"{syspath[0]}/yara_rules"
-                search_rules = yara.compile(filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/general_rules/', f) for f in listdir(f'{yara_dir}/general_rules/') if
-                                path.isfile(path.join(f'{yara_dir}/general_rules/', f)) and f.endswith(".yar")})
-                binary_rules = yara.compile(filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/binary_rules/', f) for f in listdir(f'{yara_dir}/binary_rules/') if
-                                path.isfile(path.join(f'{yara_dir}/binary_rules/', f)) and f.endswith(".yar")})
+                search_rules = yara.compile(
+                    filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/general_rules/', f) for f in
+                               listdir(f'{yara_dir}/general_rules/') if
+                               path.isfile(path.join(yara_dir, f)) and f.endswith(".yar")})
+                binary_rules = yara.compile(
+                    filepaths={f.replace(".yar", ""): path.join(f'{yara_dir}/binary_rules/', f) for f in
+                               listdir(f'{yara_dir}/binary_rules/') if
+                               path.isfile(path.join(yara_dir, f)) and f.endswith(".yar")})
             else:
                 search_rules = []
                 binary_rules = []
