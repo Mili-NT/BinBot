@@ -17,7 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------
 
-import re
 import lib
 import gzip
 import yara
@@ -25,7 +24,6 @@ import codecs
 import requests
 from time import sleep
 from base64 import b64decode
-from datetime import datetime
 from bs4 import BeautifulSoup
 from sys import path as syspath
 from configparser import ConfigParser
@@ -85,40 +83,39 @@ def parameter_connect(proch):
 def archive_engine(prescan_text, proch, vars_dict):
     if vars_dict['yara_scanning'] is True:
         matches = vars_dict['search_rules'].match(data=prescan_text)
+        # If there are matches, it saves them under different names
         if matches:
-            # Blacklist:
-            if matches[0].rule == 'blacklist':
-                lib.print_status(f"Blacklisted term detected: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
+            components = {'rule': matches[0].rule,
+                          'term': ((matches[0]).strings[0])[2].decode('UTF-8'),
+                          'id': ((matches[0]).strings[0])[1].decode('UTF-8')}
+            # If it's blacklisted, announce and pass
+            if components['rule'] == 'blacklist':
+                lib.print_status(f"Blacklisted term detected: [{components['term']}]")
+            # Otherwise, continue checking rules
             else:
-                # Base64 Artifacts
-                if matches[0].rule == 'b64Artifacts':
-                    lib.print_success(f"Base64 Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
-                    decoded_content = b64decode(prescan_text)
-                    if ((matches[0]).strings[0])[2].decode('UTF-8') == "H4sI":
-                        decompressed_string = gzip.decompress(bytes(decoded_content, 'utf-8'))
-                        with codecs.open(f"{vars_dict['workpath']}{proch}.file", 'w+', 'utf-8') as savefile:
-                            savefile.write(decompressed_string)
+                # The prebuilt rules:
+                if components['rule'] == 'b64Artifacts':
+                    lib.print_success(f"Base64 Artifact Found: [{components['term']}]")
+                    # If gzipped, decompress:
+                    if components['term'] == "H4sI":
+                        codecs.open(f"{vars_dict['workpath']}{proch}.file", 'w+', 'utf-8').write(gzip.decompress(bytes(b64decode(prescan_text), 'utf-8')))
+                    # Otherwise, decode and save:
                     else:
-                        with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[1].decode('UTF-8').decode('UTF-8')}_{proch}.txt", 'w+', 'utf-8') as savefile:
-                            savefile.write(decoded_content)
-                # Other Rules:
-                elif matches[0].rule == 'powershellArtifacts':
-                    lib.print_success(f"Powershell Artifact Found: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
-                    with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[2].decode('UTF-8')}_{proch}.ps1", 'w+', 'utf-8') as savefile:
-                        savefile.write(prescan_text)
-                elif matches[0].rule == 'keywords':
-                    lib.print_success(f"Keyword found: [{((matches[0]).strings[0])[2].decode('UTF-8')}]")
-                    with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[2].decode('UTF-8')}_{proch}.txt", 'w+', 'utf-8') as savefile:
-                        savefile.write(prescan_text)
+                        codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(b64decode(prescan_text))
+                elif components['rule'] == 'powershellArtifacts':
+                    lib.print_success(f"Powershell Artifact Found: [{components['term']}]")
+                    codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.ps1", 'w+', 'utf-8').write(prescan_text)
+                elif components['rule'] == 'keywords':
+                    lib.print_success(f"Keyword found: [{components['term']}]")
+                    codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+                # Custom rules will be saved by this statement:
                 else:
-                    with codecs.open(f"{vars_dict['workpath']}{((matches[0]).strings[0])[2].decode('UTF-8')}_{proch}.txt", 'w+', 'utf-8') as savefile:
-                        savefile.write(prescan_text)
+                    codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+        #If no matches are found, it just writes it with the parameter as a name
         else:
-            with codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', 'utf-8') as savefile:
-                savefile.write(prescan_text)
+            codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', 'utf-8').write(prescan_text)
     else:
-        with codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8") as savefile:
-            savefile.write(prescan_text)
+        codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8").write(prescan_text)
 def Non_API_Search(vars_dict):
     arch_runs = 0
     while True:
