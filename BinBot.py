@@ -33,52 +33,11 @@ from os import path, listdir
 # No API key needed
 
 # Functions
-def archive_connect():
-    archive_url = "https://pastebin.com/archive/text"
-    def print_connecterror():
-        lib.print_error(f"\nException occurred: {e}\nPossible causes: Poor/Non-functioning Internet connection or pastebin is unreachable\nPossible fixes: Troubleshoot internet connection or check status of {archive_url}")
-    def print_timeouterror():
-        lib.print_error(f"\nException occurred: {e}\nPossible causes: Too many requests made to {archive_url}\nPossible fixes: Check firewall settings and check the status of {archive_url}.")
-    def print_genericerror():
-        lib.print_error(f"\nException occurred: {e}")
-    while True:
-        try:
-            archive_page = requests.get(archive_url, headers=lib.random_headers())
-            return archive_page
-        except Exception as e:
-            if e is requests.exceptions.ConnectionError:
-                print_connecterror()
-                break
-            elif e is requests.exceptions.Timeout:
-                print_timeouterror()
-                break
-            else:
-                print_genericerror()
-                break
-def parameter_connect(proch):
-    archive_url = "https://pastebin.com/archive/text"
-    def print_connecterror():
-        lib.print_error(f"\nException occurred: {e}\nPossible causes: Poor/Non-functioning Internet connection or pastebin is unreachable\nPossible fixes: Troubleshoot internet connection or check status of {archive_url}")
-    def print_timeouterror():
-        lib.print_error(f"\nException occurred: {e}\nPossible causes: Too many requests made to {archive_url}\nPossible fixes: Check firewall settings and check the status of {archive_url}.")
-    def print_genericerror():
-        lib.print_error(f"\nException occurred: {e}")
-    while True:
-        url_foundation = "https://pastebin.com/"
-        full_arch_url = url_foundation + proch  # Generate URLs by adding the processed parameter to the base URL
-        try:
-            full_archpage = requests.get(full_arch_url, headers=lib.random_headers())
-            return full_archpage, full_arch_url
-        except Exception as e:
-            if e is requests.exceptions.ConnectionError:
-                print_connecterror()
-                continue
-            elif e is requests.exceptions.Timeout:
-                print_timeouterror()
-                continue
-            else:
-                print_genericerror()
-                continue
+def connect(url):
+    try:
+        return requests.get(url, headers=lib.random_headers())
+    except Exception as e:
+        lib.print_error(e)
 
 def archive_engine(prescan_text, proch, vars_dict):
     if vars_dict['yara_scanning'] is True:
@@ -113,6 +72,7 @@ def archive_engine(prescan_text, proch, vars_dict):
                     codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
         #If no matches are found, it just writes it with the parameter as a name
         else:
+            lib.print_status(f"No matches in document: /{proch}")
             codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', 'utf-8').write(prescan_text)
     else:
         codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8").write(prescan_text)
@@ -131,7 +91,7 @@ def Non_API_Search(vars_dict):
                 sleep(vars_dict['cooldown']/2)
                 lib.print_status(f"resuming...")
         if arch_runs < vars_dict['stop_input'] or vars_dict['stop_input'] is True:
-            arch_page = archive_connect()
+            arch_page = connect("https://pastebin.com/archive")
             arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
             sleep(2)
             lib.print_status(f"Getting archived pastes...")
@@ -143,31 +103,14 @@ def Non_API_Search(vars_dict):
             else:
                 pass
             lib.print_status(f"Finding params...")
-            table = arch_soup.findAll("table", attrs={'class': "maintable"}) # Fetch the table of recent pastes
-            while True:
-                try:
-                    tablehrefs = [a for a in table[0].findAll('a', href=True) if 'archive' not in a['href']]
-                    break
-                except AttributeError:
-                    lib.print_error(f"IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour...")
-                    sleep(vars_dict['cooldown'])
-                    lib.print_error(f"Process resumed...")
-                    continue
+            table = arch_soup.find("table", attrs={'class': "maintable"})
+            tablehrefs = [a['href'] for a in table.findAll('a', href=True) if 'archive' not in a['href']]
             for h in tablehrefs:
-                proch = (h['href']).replace("/", "") # fetch the URL param for each paste
-                lib.print_success("params fetched...")
-                lib.print_status(f"Acting on param {proch}...")
-                full_archpage, full_arch_url = parameter_connect(proch)
+                proch = h[1:]
+                lib.print_success(f"params fetched...\nActing on param {proch}...")
+                full_archpage = connect(f"https://pastebin.com/{proch}")
                 item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
-                unprocessed = item_soup.find('textarea') # Fetch the raw text in the paste.
-                taglist = [
-                    '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
-                    '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
-                    '<textarea class="paste_textarea" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)" rows="10">',
-                    '</textarea>', '<textarea class="paste_code" id="paste_code" name="paste_code" onkeydown="return catchTab(this,event)">',
-                ]
-                for tag in taglist:
-                    unprocessed = str(unprocessed).replace(tag, "") # process the raw text by removing html tags
+                unprocessed = item_soup.find('textarea').contents[0] # Fetch the raw text in the paste.
                 archive_engine(unprocessed, proch, vars_dict)
                 arch_runs += 1
                 sleep(vars_dict['limiter'])
