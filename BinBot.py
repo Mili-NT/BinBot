@@ -104,10 +104,10 @@ def Non_API_Search(vars_dict):
                 pass
             lib.print_status(f"Finding params...")
             table = arch_soup.find("table", attrs={'class': "maintable"})
-            tablehrefs = [a['href'] for a in table.findAll('a', href=True) if 'archive' not in a['href']]
+            tablehrefs = [(x+1, y) for x,y in enumerate([a['href'] for a in table.findAll('a', href=True) if 'archive' not in a['href']])]
             for h in tablehrefs:
-                proch = h[1:]
-                lib.print_success(f"params fetched...\nActing on param {proch}...")
+                proch = h[1][1:]
+                lib.print_success(f"Acting on param {proch}  [{h[0]}/{len(tablehrefs)}]...")
                 full_archpage = connect(f"https://pastebin.com/{proch}")
                 item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
                 unprocessed = item_soup.find('textarea').contents[0] # Fetch the raw text in the paste.
