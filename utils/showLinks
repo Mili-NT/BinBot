@@ -16,14 +16,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------
-
-"""
-So you're probably looking at this and thinking, in the words of JonTron: "Why? Why would you do this?"
-
-This script prints all links starting with the argument passed as sys,.arg[1], and prints a newline
-
-It's pretty neat. Like with all utils, chmod +x it and stick it in /usr/local/bin
-"""
 import os
 import sys
-[print(f'Links loaded: {list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]})[0]}'), [os.system(f'{(({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]})[0]])[0])[0]}{x}' + ' && echo %s' % (({len(x):(("cat ", x), "\n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]})[0]])[1])) for x in (({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]}[list({len(x):(("cat ", x), "n") for x in [[x for x in [x for x in os.listdir(os.getcwd()) if os.path.isfile(os.path.join(os.getcwd(), x))] if x.lower().startswith(sys.argv[1].lower())]]})[0]])[0])[1]]] if __name__ == "__main__" and (1 < len(sys.argv) < 3) else print(f"Usage: {sys.argv[0]} <starting characters of file>")
+from time import sleep
+
+"""
+pssst... hey kid... wanna see a terrifying one-liner version of this?
+
+https://github.com/Mili-NT/Bad-Python/blob/master/showFiles.py
+"""
+
+def main(start_chars):
+    files = [f for f in os.listdir(os.getcwd()) if os.path.isfile(f) and f.startswith(start_chars)]
+    print(f"Links loaded: {len(files)}")
+    sleep(0.5)
+    for file in files:
+        os.system(f"cat {file}")
+        sleep(0.5)
+if __name__ == "__main__":
+    try:
+        main(sys.argv[1])
+    except IndexError:
+        print(f"Usage: {sys.argv[0]} <starting characters of link>")
