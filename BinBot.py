@@ -61,10 +61,10 @@ def config(isManual):
         while True:
             workpath = lib.print_input(
                 "Enter the path you wish to save text documents to (enter curdir for current directory)")
-            workpath = syspath[0] if workpath.lower() == 'curdir' else None
+            workpath = syspath[0] if workpath.lower() == 'curdir' else workpath
             if path.isdir(workpath):
                 lib.print_success("Valid Path...")
-                workpath = f'{workpath}/' if workpath.endswith('\\') or workpath.endswith('/') else None
+                workpath = f'{workpath}/' if workpath.endswith('\\') or workpath.endswith('/') else workpath
                 break
             else:
                 lib.print_error("Invalid path, check input...")
@@ -82,8 +82,8 @@ def config(isManual):
                 limiter = int(lib.print_input("Enter the request limit you wish to use (recommended: 5)"))
                 cooldown = int(
                     lib.print_input("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
-                limiter = 5 if limiter == "" else None
-                cooldown = 1200 if cooldown == "" else None
+                limiter = 5 if limiter == "" else limiter
+                cooldown = 1200 if cooldown == "" else cooldown
                 break
             except ValueError:
                 lib.print_error("Invalid Input.")
