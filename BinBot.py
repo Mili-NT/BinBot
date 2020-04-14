@@ -96,8 +96,8 @@ def config(isManual):
                 continue
             elif yara_choice.lower() in ['y', 'yes']:
                 yara_scanning = True
-                search_rules = yara.compile(yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar")}))
-                binary_rules = yara.compile(yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/binary_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(".yar")}))
+                search_rules = yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar")})
+                binary_rules = yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/binary_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(".yar")})
             elif yara_choice.lower() in ['n', 'no']:
                 yara_scanning = False
                 search_rules = []
