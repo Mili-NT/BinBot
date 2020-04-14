@@ -52,9 +52,7 @@ def config(isManual):
                         'limiter': 5,
                         'cooldown': 600,
                         'yara_scanning': True,
-                        'search_rules': yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar")}),
-                        'binary_rules': yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/binary_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(".yar")}),
-                        }
+                      }
     # Manual Setup:
     if isManual:
         # Save Path Input:
