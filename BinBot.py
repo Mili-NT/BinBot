@@ -19,12 +19,10 @@
 
 import sys
 import lib
-import gzip
 import json
 import yara
 import codecs
 from time import sleep
-from base64 import b64decode
 from bs4 import BeautifulSoup
 from sys import path as syspath
 from os import path, listdir
@@ -115,7 +113,7 @@ def config(configpath):
     finally:
         print("\n")
         return vars_dict
-# YARA and Saving Function:
+# Matching and Saving Function:
 def archive_engine(prescan_text, proch, vars_dict):
     """
     This function scans files for YARA matches (if enabled) and saves files.
@@ -138,28 +136,7 @@ def archive_engine(prescan_text, proch, vars_dict):
                 lib.print_status(f"Blacklisted term detected: [{components['term']}]")
             # Otherwise, continue checking rules
             else:
-                # The prebuilt rules:
-                if components['rule'] == 'b64Artifacts':
-                    lib.print_success(f"Base64 Artifact Found: [{components['term']}]")
-                    # If gzipped, decompress:
-                    if components['term'] == "H4sI":
-                        codecs.open(f"{vars_dict['workpath']}{proch}.file", 'w+', 'utf-8').write(gzip.decompress(bytes(b64decode(prescan_text), 'utf-8')))
-                    # Otherwise, decode and save:
-                    else:
-                        codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(b64decode(prescan_text))
-                elif components['rule'] == 'powershellArtifacts':
-                    lib.print_success(f"Powershell Artifact Found: [{components['term']}]")
-                    codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.ps1", 'w+', 'utf-8').write(prescan_text)
-                elif components['rule'] == 'keywords':
-                    lib.print_success(f"Keyword found: [{components['term']}]")
-                    codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
-                elif components['rule'] == 'regex_pattern':
-                    lib.print_success(f"{components['rule']} match found: {components['id']}")
-                    codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
-                # Custom rules will be saved by this statement:
-                else:
-                    lib.print_success(f"{components['rule']} match found: {components['term']}")
-                    codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+                lib.general_matching(vars_dict, prescan_text, proch, components)
         #If no matches are found, it just writes it with the parameter as a name
         else:
             lib.print_status(f"No matches in document: /{proch}")

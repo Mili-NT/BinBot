@@ -18,8 +18,12 @@
 # -----------------------------------------------------------------------
 
 import os
+import gzip
+import codecs
 import requests
 from random import choice
+from zipfile import ZipFile
+from base64 import b64decode
 from bs4 import BeautifulSoup
 from datetime import datetime
 
@@ -95,6 +99,52 @@ def print_title(msg):
         print(msg)
     else:
         print(f"\033[35m {msg}")
+#
+# YARA Functions:
+#
+def binary_matching(vars_dict, filepath):
+    matches = vars_dict['binary_rules'].match(data=codecs.open(filepath, 'rb', 'utf-8'))
+    if matches:
+        components = {'rule': matches[0].rule,
+                      'term': ((matches[0]).strings[0])[2] if isinstance(((matches[0]).strings[0])[2], str) else
+                      ((matches[0]).strings[0])[2].decode('UTF-8'),
+                      'id': (((matches[0]).strings[0])[1])[1:]}
+        print_success(f"{os.path.split(filepath)[1]} matches for {components['rule']}")
+        print_success(f"Matched item: {components['term']}")
+        os.rename(filepath, f"{os.path.split(filepath)[0]}/{components['rule']}.file")
+def general_matching(vars_dict, prescan_text, proch, components):
+    if components['rule'] == 'b64Artifacts':
+        print_success(f"Base64 Artifact Found: [{components['term']}]")
+        # If gzipped, decompress:
+        if components['term'] == "H4sI":
+            filename = f"{vars_dict['workpath']}{proch}.file"
+            codecs.open(filename, 'w+', 'utf-8').write(gzip.decompress(bytes(b64decode(prescan_text), 'utf-8')))
+        # Otherwise, decode and save:
+        else:
+            filename = f"{vars_dict['workpath']}{components['id']}_{proch}.txt"
+            codecs.open(filename, 'w+', 'utf-8').write(b64decode(prescan_text))
+        # If zipped, unzip and pass all files in unzipped directory to binary_matching
+        if components['rule'] == "UEs":
+            zip_dir = f"{vars_dict['workpath']}/{os.path.split(filename)[1].split('.')[0]}"
+            ZipFile(filename, "r").extractall(zip_dir)
+            for file in [os.path.join(vars_dict['workpath'], f) for f in os.listdir(zip_dir)]:
+                binary_matching(vars_dict, file)
+        # If not zipped, pass the singular file to binary_matching
+        else:
+            binary_matching(vars_dict, filename)
+    elif components['rule'] == 'powershellArtifacts':
+        print_success(f"Powershell Artifact Found: [{components['term']}]")
+        codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.ps1", 'w+', 'utf-8').write(prescan_text)
+    elif components['rule'] == 'keywords':
+        print_success(f"Keyword found: [{components['term']}]")
+        codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+    elif components['rule'] == 'regex_pattern':
+        print_success(f"{components['rule']} match found: {components['id']}")
+        codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+    # Custom rules will be saved by this statement:
+    else:
+        print_success(f"{components['rule']} match found: {components['term']}")
+        codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
 #
 # Misc Program Functions:
 #

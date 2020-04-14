@@ -19,4 +19,4 @@ If no path is passed, binbot will run a manual setup.
 
 ## TODO:
 - API integration
-- Binary rules implementation
+
