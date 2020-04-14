@@ -17,6 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------
 
+import sys
 import lib
 import gzip
 import json
@@ -27,7 +28,7 @@ from time import sleep
 from base64 import b64decode
 from bs4 import BeautifulSoup
 from sys import path as syspath
-from os import path, listdir, system
+from os import path, listdir
 
 # Author: Mili
 # No API key needed
@@ -42,19 +43,14 @@ def connect(url):
         return requests.get(url, headers=lib.random_headers())
     except Exception as e:
         lib.print_error(e)
-def config(isManual):
+def config(configpath):
     """
-    :param isManual: True if user selected to not load a config file, else False
+    :param configpath: path to config file, if it is blank or non-existent, it runs manual setup
     :return: vars_dict, a dictionary containing all the variables needed to run the main functions
     """
-    default_settings = {'workpath': 'pastes/',
-                        'stop_input': True,
-                        'limiter': 5,
-                        'cooldown': 600,
-                        'yara_scanning': True,
-                      }
+
     # Manual Setup:
-    if isManual:
+    if path.isfile(configpath) is False:
         # Save Path Input:
         while True:
             workpath = lib.print_input(
@@ -112,14 +108,8 @@ def config(isManual):
             json.dump(vars_dict, open(f"{configname}.json", 'w'))
     # Loading Config:
     else:
-        configpath = lib.print_input('Enter the full path of the config file')
-        if path.isfile(configpath) is True:
-            vars_dict = json.load(open(configpath))
-        else:
-            lib.print_error("No such file found, taking default settings...")
-            if path.isdir('pastes') is False:
-                system("mkdir pastes")
-            vars_dict = default_settings
+        vars_dict = json.load(open(configpath))
+
     # YARA Compilation:
     if vars_dict['yara_scanning']:
         vars_dict['search_rules'] = yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar")})
@@ -235,7 +225,7 @@ def Non_API_Search(vars_dict):
             lib.print_success(f"Operation Finished...")
             break
 # Main
-def main():
+def main(args):
     lib.print_title("""
     _________________________________________
     [                                       ]
@@ -244,14 +234,14 @@ def main():
     [            Made by Mili-NT            ]
     [                                       ]
     [_______________________________________]
+    Note: To load a config file, pass it as an argument
     """)
-    configchoice = lib.print_input("Load config file? [y]/[n]")
-    vars_dict = config(False) if configchoice.lower() in ['y', 'yes'] else config(True)
+    vars_dict = config(args[1]) if len(args) > 1 else config("")
     try:
         Non_API_Search(vars_dict)
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled...")
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
 
