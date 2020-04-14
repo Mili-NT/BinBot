@@ -10,6 +10,9 @@ To add YARA rules, simply place the rules to be ran on default pastes in the gen
 Any rules you want ran on executable files, place in the binary_rules folder.
 Make sure to customize your blacklist.yar and keywords.yar file. 
 
+Usage: `python3 BinBot.py <path to configuration file>`
+
+If no path is passed, binbot will run a manual setup.
 ## Planned Features:
 * Logging system
 * External services API integration (VT & HybridAnalysis)

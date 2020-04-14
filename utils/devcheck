@@ -26,7 +26,7 @@ def main():
                          "M3U", "fortnite"]
     for file in [f for f in os.listdir(os.getcwd()) if os.path.isfile(f)]:
         with open(file, 'r') as f:
-            if any(term.lower() in  f.read().lower() for term in blacklisted_terms):
+            if any(term.lower() in f.read().lower() for term in blacklisted_terms):
                 print(f"Blacklisted terms in {file}. YARA error likely.")
 if __name__ == '__main__':
     main()
