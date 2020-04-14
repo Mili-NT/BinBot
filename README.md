@@ -15,8 +15,8 @@ Usage: `python3 BinBot.py <path to configuration file>`
 If no path is passed, binbot will run a manual setup.
 ## Planned Features:
 * Logging system
-* External services API integration (VT & HybridAnalysis)
 
 
 ## TODO:
-- Fix base64 gzipped pastes not being decompressed and renamed
+- API integration
+- Binary rules implementation
