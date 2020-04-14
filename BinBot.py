@@ -19,6 +19,7 @@
 
 import lib
 import gzip
+import json
 import yara
 import codecs
 import requests
@@ -26,20 +27,127 @@ from time import sleep
 from base64 import b64decode
 from bs4 import BeautifulSoup
 from sys import path as syspath
-from configparser import ConfigParser
-from os import path, listdir
+from os import path, listdir, system
 
 # Author: Mili
 # No API key needed
 
-# Functions
+# Misc Functions:
 def connect(url):
+    """
+    :param url: address to connect to
+    :return: Response object for the page connected to
+    """
     try:
         return requests.get(url, headers=lib.random_headers())
     except Exception as e:
         lib.print_error(e)
+def config(isManual):
+    """
+    :param isManual: True if user selected to not load a config file, else False
+    :return: vars_dict, a dictionary containing all the variables needed to run the main functions
+    """
+    default_settings = {'workpath': 'pastes',
+                        'stop_input': True,
+                        'limiter': 5,
+                        'cooldown': 600,
+                        'yara_scanning': True,
+                        'search_rules': yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar")}),
+                        'binary_rules': yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/binary_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(".yar")}),
+                        }
+    # Manual Setup:
+    if isManual:
+        # Save Path Input:
+        while True:
+            workpath = lib.print_input(
+                "Enter the path you wish to save text documents to (enter curdir for current directory)")
+            workpath = syspath[0] if workpath.lower() == 'curdir' else None
+            if path.isdir(workpath):
+                lib.print_success("Valid Path...")
+                workpath = f'{workpath}/' if workpath.endswith('\\') or workpath.endswith('/') else None
+                break
+            else:
+                lib.print_error("Invalid path, check input...")
+                continue
+        # Looping, Limiter, and Cooldown Input:
+        while True:
+            try:
+                loop_input = lib.print_input("Run in a constant loop? [y]/[n]")
+                if loop_input.lower() == 'y':
+                    stop_input = True
+                elif loop_input.lower() == 'n':
+                    stop_input = int(
+                        lib.print_input("Enter the amount of successful pulls you wish to make (enter 0 for infinite)"))
+                # Limiter and Cooldown
+                limiter = int(lib.print_input("Enter the request limit you wish to use (recommended: 5)"))
+                cooldown = int(
+                    lib.print_input("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
+                limiter = 5 if limiter == "" else None
+                cooldown = 1200 if cooldown == "" else None
+                break
+            except ValueError:
+                lib.print_error("Invalid Input.")
+                continue
+        # YARA
+        while True:
+            yara_choice = lib.print_input("Enable scanning documents using YARA rules? [y/n]")
+            if yara_choice.lower() not in ['y', 'n', 'yes', 'no']:
+                lib.print_error("Invalid Input.")
+                continue
+            elif yara_choice.lower() in ['y', 'yes']:
+                yara_scanning = True
+                search_rules = yara.compile(yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar")}))
+                binary_rules = yara.compile(yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/binary_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(".yar")}))
+            elif yara_choice.lower() in ['n', 'no']:
+                yara_scanning = False
+                search_rules = []
+                binary_rules = []
+            break
+        # Building Settings Dict:
+        vars_dict = {
+            'workpath': workpath,
+            'stop_input': stop_input,
+            'limiter': limiter,
+            'cooldown': cooldown,
+            'yara_scanning': yara_scanning,
+            'search_rules': search_rules,
+            'binary_rules': binary_rules,
+        }
+        # Saving
+        savechoice = lib.print_input('Save configuration to file for repeated use? [y]/[n]: ')
+        if savechoice.lower() == 'y':
+            configname = lib.print_input("Enter the config name (no extension)")
+            json.dump(vars_dict, open(f"{configname}.json", 'w'))
+    # Loading Config:
+    else:
+        configpath = lib.print_input('Enter the full path of the config file')
+        if path.isfile(configpath) is True:
+            vars_dict = json.load(open(configpath))
+        else:
+            lib.print_error("No such file found, taking default settings...")
+            system("mkdir pastes")
+            vars_dict = default_settings
 
+    # Display and Return:
+    try:
+        print("\n")
+        for x in vars_dict.keys():
+            if x != 'search_rules' and x != 'binary_rules':
+                print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
+                print("\x1b[94m---------------------\x1b[0m")
+    finally:
+        print("\n")
+    return vars_dict
+# Main Scraping and Classification Functions:
 def archive_engine(prescan_text, proch, vars_dict):
+    """
+    This function scans files for YARA matches (if enabled) and saves files.
+
+    :param prescan_text: The raw text of the paste
+    :param proch: The URL parameter of the paste (i.e: https://pastebin.com/{proch})
+    :param vars_dict: dict of variables returned from config()
+    :return: Nothing, saves files if they aren't blacklisted and if they are, does nothing
+    """
     if vars_dict['yara_scanning'] is True:
         matches = vars_dict['search_rules'].match(data=prescan_text)
         # If there are matches, it saves them under different names
@@ -77,6 +185,13 @@ def archive_engine(prescan_text, proch, vars_dict):
     else:
         codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8").write(prescan_text)
 def Non_API_Search(vars_dict):
+    """
+    This function fetches the pastebin archive and all the pastes in it. It passes them to archive_engine(), then sleeps
+    per the time specified by vars_dict['cooldown']
+
+    :param vars_dict: dict of necessary variables returned from config()
+    :return: Nothing
+    """
     arch_runs = 0
     while True:
         if arch_runs > 0:
@@ -118,152 +233,6 @@ def Non_API_Search(vars_dict):
         else:
             lib.print_success(f"Operation Finished...")
             break
-
-def manual_setup():
-    # Save path
-    while True:
-        workpath = lib.print_input("Enter the path you wish to save text documents to (enter curdir for current directory)")
-        if workpath.lower() == 'curdir':
-            workpath = syspath[0]
-        if path.isdir(workpath):
-            lib.print_success("Valid Path...")
-            if workpath.endswith('\\') or workpath.endswith('/'):
-                pass
-            else:
-                workpath = workpath + str('/')
-            break
-        else:
-            lib.print_error("Invalid path, check input...")
-            continue
-    # Looping
-    while True:
-        try:
-            stopinput_input = lib.print_input("Run in a constant loop? [y]/[n]")
-            if stopinput_input.lower() == 'y':
-                stop_input = True
-            elif stopinput_input.lower() == 'n':
-                stop_input = int(lib.print_input("Enter the amount of successful pulls you wish to make (enter 0 for infinite)"))
-            # Limiter and Cooldown
-            try: limiter = int(lib.print_input("Enter the request limit you wish to use (recommended: 5)"))
-            except: limiter = 5
-            try: cooldown = int(lib.print_input("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
-            except: cooldown = 1200
-            break
-        except ValueError:
-            lib.print_error("Invalid Input.")
-            continue
-    while True:
-        yara_choice = lib.print_input("Enable scanning documents using YARA rules? [y/n]")
-        if yara_choice.lower() not in ['y', 'n', 'yes', 'no']:
-            lib.print_error("Invalid Input.")
-            continue
-        elif yara_choice.lower() in ['y', 'yes']:
-            yara_scanning = True
-            break
-        elif yara_choice.lower() in ['n', 'no']:
-            yara_scanning = False
-            break
-    # Yara Compiling
-    if yara_scanning is True:
-        search_rules = yara.compile(
-            filepaths={f.replace(".yar", ""): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if
-                       path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar")})
-        binary_rules = yara.compile(
-            filepaths={f.replace(".yar", ""): path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/binary_rules/') if
-                       path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(".yar")})
-    else:
-        search_rules = []
-        binary_rules = []
-    # Saving
-    while True:
-        savechoice = lib.print_input('Save configuration to file for repeated use? [y]/[n]')
-        if savechoice.lower() == 'n':
-            break
-        elif savechoice.lower() == 'y':
-            configname = lib.print_input("Enter the config name (no extension)")
-            try:
-                with open(configname + '.ini', 'w+') as cfile:
-                    cfile.write(
-f"""[initial_vars]
-workpath = {workpath}
-stop_input = {stop_input}
-limiter = {limiter}
-cooldown = {cooldown}
-yara_scanning = {yara_scanning}""")
-                    break
-            except Exception as e:
-                print(f"{e}")
-                break
-    vars_dict = {
-        'workpath': workpath,
-        'stop_input': stop_input,
-        'limiter': limiter,
-        'cooldown': cooldown,
-        'yara_scanning': yara_scanning,
-        'search_rules': search_rules,
-        'binary_rules': binary_rules,
-    }
-    try:
-        print("\n")
-        for x in vars_dict.keys():
-            if x != 'search_rules' and x != 'binary_rules':
-                print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
-                print("\x1b[94m---------------------\x1b[0m")
-    finally:
-        print("\n")
-    return vars_dict
-def load_config():
-    parser = ConfigParser()
-    while True:
-        configpath = lib.print_input('Enter the full path of the config file')
-        if path.isfile(configpath) is True:
-            parser.read(configpath, encoding='utf-8-sig')
-            workpath = parser.get('initial_vars', 'workpath')
-            stop_input = parser.get('initial_vars', 'stop_input')
-            if stop_input == str('True'):
-                stop_input = True
-            else:
-                stop_input = int(stop_input)
-            limiter = int(parser.get('initial_vars', 'limiter'))
-            cooldown = int(parser.get('initial_vars', 'cooldown'))
-            yara_scanning = parser.getboolean('initial_vars', 'yara_scanning')
-            if yara_scanning is True:
-                search_rules = yara.compile(
-                    filepaths={f.replace(".yar", ""): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in
-                               listdir(f'{syspath[0]}/yara_rules/general_rules/') if
-                               path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(
-                                   ".yar")})
-                binary_rules = yara.compile(
-                    filepaths={f.replace(".yar", ""): path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in
-                               listdir(f'{syspath[0]}/yara_rules/binary_rules/') if
-                               path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(
-                                   ".yar")})
-            else:
-                search_rules = []
-                binary_rules = []
-            break
-        else:
-            lib.print_error("No such file found")
-            continue
-    vars_dict = {
-        'workpath': workpath,
-        'stop_input': stop_input,
-        'limiter': limiter,
-        'cooldown': cooldown,
-        'yara_scanning': yara_scanning,
-        'search_rules': search_rules,
-        'binary_rules': binary_rules,
-    }
-    try:
-        print("\n")
-        for x in vars_dict.keys():
-            if x != 'search_rules' and x != 'binary_rules':
-                print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
-                print("\x1b[94m---------------------\x1b[0m")
-    finally:
-        print("\n")
-    return vars_dict
-
 # Main
 def main():
     lib.print_title("""
@@ -275,17 +244,8 @@ def main():
     [                                       ]
     [_______________________________________]
     """)
-    while True:
-        configchoice = lib.print_input("Load config file? [y]/[n]")
-        if configchoice.lower() not in ['y', 'n', 'yes', 'no']:
-            lib.print_error("Invalid Input.")
-            continue
-        elif configchoice.lower() in ['y', 'yes']:
-            vars_dict = load_config()
-            break
-        elif configchoice.lower() in ['no', 'n']:
-            vars_dict = manual_setup()
-            break
+    configchoice = lib.print_input("Load config file? [y]/[n]")
+    vars_dict = config(False) if configchoice.lower() in ['y', 'yes'] else config(True)
     try:
         Non_API_Search(vars_dict)
     except KeyboardInterrupt:
