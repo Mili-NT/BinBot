@@ -178,10 +178,12 @@ def non_api_search(vars_dict):
     arch_runs = 0
     while True:
         lib.print_status(f"Runs: {arch_runs}")
+        # Fetch the pastebin public archive
         lib.print_status(f"Getting archived pastes...")
         arch_page = lib.connect("https://pastebin.com/archive")
         arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
         sleep(2)
+        # Parse the archive HTML to get the individual document URLs
         lib.print_status(f"Finding params...")
         table = arch_soup.find("table", attrs={'class': "maintable"})
         tablehrefs = [(x + 1, y) for x, y in enumerate([a['href'] for a in table.findAll('a', href=True) if 'archive' not in a['href']])]
@@ -198,11 +200,12 @@ def non_api_search(vars_dict):
             arch_runs += 1
             sleep(vars_dict['limiter'])
         # if not running in a constant loop, check if the runs is greater or equal to the stop_input
-        # If yes, exit. If no, wait the cooldown and continue
+        # If yes, exit. If no, continue
         if isinstance(vars_dict['stop_input'], int):
             if arch_runs >= vars_dict['stop_input']:
                 lib.print_success(f"Runs Complete, Operation Finished...")
                 exit()
+        # Cooldown after all individual pastes are scanned
         lib.print_status(f"Pastes fetched, cooling down for {vars_dict['cooldown']} seconds...")
         sleep(vars_dict['cooldown'] / 2)
         lib.print_status(f"Halfway through cooldown")
@@ -221,6 +224,8 @@ def main(args):
     [_______________________________________]
     Note: To load a config file, pass it as an argument
     """)
+    # If filepath is passed, it passes that to config().
+    # If not, it passes an invalid path "" which results in manual setup
     vars_dict = config(args[1]) if len(args) > 1 else config("")
     try:
         non_api_search(vars_dict)
