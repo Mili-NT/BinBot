@@ -96,12 +96,8 @@ def config(isManual):
                 continue
             elif yara_choice.lower() in ['y', 'yes']:
                 yara_scanning = True
-                search_rules = yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar")})
-                binary_rules = yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/binary_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(".yar")})
             elif yara_choice.lower() in ['n', 'no']:
                 yara_scanning = False
-                search_rules = []
-                binary_rules = []
             break
         # Building Settings Dict:
         vars_dict = {
@@ -109,12 +105,10 @@ def config(isManual):
             'stop_input': stop_input,
             'limiter': limiter,
             'cooldown': cooldown,
-            'yara_scanning': yara_scanning,
-            'search_rules': search_rules,
-            'binary_rules': binary_rules,
+            'yara_scanning': yara_scanning
         }
         # Saving
-        savechoice = lib.print_input('Save configuration to file for repeated use? [y]/[n]: ')
+        savechoice = lib.print_input('Save configuration to file for repeated use? [y]/[n]')
         if savechoice.lower() == 'y':
             configname = lib.print_input("Enter the config name (no extension)")
             json.dump(vars_dict, open(f"{configname}.json", 'w'))
@@ -127,7 +121,10 @@ def config(isManual):
             lib.print_error("No such file found, taking default settings...")
             system("mkdir pastes")
             vars_dict = default_settings
-
+    # YARA Compilation:
+    if vars_dict['yara_scanning']:
+        vars_dict['search_rules'] = yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar")})
+        vars_dict['binary_rules'] = yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/binary_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(".yar")})
     # Display and Return:
     try:
         print("\n")
