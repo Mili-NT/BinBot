@@ -47,7 +47,7 @@ def config(isManual):
     :param isManual: True if user selected to not load a config file, else False
     :return: vars_dict, a dictionary containing all the variables needed to run the main functions
     """
-    default_settings = {'workpath': 'pastes',
+    default_settings = {'workpath': 'pastes/',
                         'stop_input': True,
                         'limiter': 5,
                         'cooldown': 600,
@@ -117,7 +117,8 @@ def config(isManual):
             vars_dict = json.load(open(configpath))
         else:
             lib.print_error("No such file found, taking default settings...")
-            system("mkdir pastes")
+            if path.isdir('pastes') is False:
+                system("mkdir pastes")
             vars_dict = default_settings
     # YARA Compilation:
     if vars_dict['yara_scanning']:
@@ -148,8 +149,9 @@ def archive_engine(prescan_text, proch, vars_dict):
         # If there are matches, it saves them under different names
         if matches:
             components = {'rule': matches[0].rule,
-                          'term': ((matches[0]).strings[0])[2],
-                          'id': ((matches[0]).strings[0])[1]}
+                          # If term is a string, do nothing. Else, decode as UTF-8
+                          'term': ((matches[0]).strings[0])[2] if isinstance(((matches[0]).strings[0])[2], str) else ((matches[0]).strings[0])[2].decode('UTF-8'),
+                          'id': (((matches[0]).strings[0])[1])[1:]}
             # If it's blacklisted, announce and pass
             if components['rule'] == 'blacklist':
                 lib.print_status(f"Blacklisted term detected: [{components['term']}]")
@@ -170,9 +172,13 @@ def archive_engine(prescan_text, proch, vars_dict):
                 elif components['rule'] == 'keywords':
                     lib.print_success(f"Keyword found: [{components['term']}]")
                     codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+                elif components['rule'] == 'regex_pattern':
+                    lib.print_success(f"{components['rule']} match found: {components['id']}")
+                    codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
                 # Custom rules will be saved by this statement:
                 else:
-                    codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+                    lib.print_success(f"{components['rule']} match found: {components['term']}")
+                    codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
         #If no matches are found, it just writes it with the parameter as a name
         else:
             lib.print_status(f"No matches in document: /{proch}")

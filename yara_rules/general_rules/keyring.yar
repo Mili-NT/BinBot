@@ -14,7 +14,6 @@ rule regex_pattern
         $slackwebhook = /https:\/\/hooks.slack.com\/services\/T[a-zA-Z0-9_]{8}\/B[a-zA-Z0-9_]{8}\/[a-zA-Z0-9_]{24}/
         $slackbottoken = /xoxb-\\d+-[0-9a-zA-Z]+/
         $genericapi = /[a|A][p|P][i|I][_]?[k|K][e|E][y|Y].{0,30}['\"\\s][0-9a-zA-Z]{32,45}['\"\\s]/
-        $discordbottoken = /([\w\-\.]+[\-\.][\w\-\.]+)/
         $discordwebhook = /(https:\/\/discordapp\.com\/api\/webhooks\/[\d]+\/[\w]+)/
         $discordnitro = /(https:\/\/discord\.gift\/.+[a-z{1,16}])/
         $herokuapi = /[h|H][e|E][r|R][o|O][k|K][u|U].{0,30}[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}/
