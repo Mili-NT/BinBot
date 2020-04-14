@@ -150,8 +150,8 @@ def archive_engine(prescan_text, proch, vars_dict):
         # If there are matches, it saves them under different names
         if matches:
             components = {'rule': matches[0].rule,
-                          'term': ((matches[0]).strings[0])[2].decode('UTF-8'),
-                          'id': ((matches[0]).strings[0])[1].decode('UTF-8')}
+                          'term': ((matches[0]).strings[0])[2],
+                          'id': ((matches[0]).strings[0])[1]}
             # If it's blacklisted, announce and pass
             if components['rule'] == 'blacklist':
                 lib.print_status(f"Blacklisted term detected: [{components['term']}]")
