@@ -23,7 +23,6 @@ import gzip
 import json
 import yara
 import codecs
-import requests
 from time import sleep
 from base64 import b64decode
 from bs4 import BeautifulSoup
@@ -33,22 +32,12 @@ from os import path, listdir
 # Author: Mili
 # No API key needed
 
-# Misc Functions:
-def connect(url):
-    """
-    :param url: address to connect to
-    :return: Response object for the page connected to
-    """
-    try:
-        return requests.get(url, headers=lib.random_headers())
-    except Exception as e:
-        lib.print_error(e)
+# Setup Function:
 def config(configpath):
     """
     :param configpath: path to config file, if it is blank or non-existent, it runs manual setup
     :return: vars_dict, a dictionary containing all the variables needed to run the main functions
     """
-
     # Manual Setup:
     if path.isfile(configpath) is False:
         # Save Path Input:
@@ -71,11 +60,14 @@ def config(configpath):
                     stop_input = True
                 elif loop_input.lower() == 'n':
                     stop_input = int(
-                        lib.print_input("Enter the amount of successful pulls you wish to make (enter 0 for infinite)"))
+                        lib.print_input("Enter the amount of individual pastes to fetch: "))
+                    # If they enter 0 or below pastes to fetch, run in an infinite loop:
+                    stop_input = True if stop_input <= 0 else stop_input
                 # Limiter and Cooldown
                 limiter = int(lib.print_input("Enter the request limit you wish to use (recommended: 5)"))
                 cooldown = int(
                     lib.print_input("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
+                # If no values are entered, select the recommended
                 limiter = 5 if limiter == "" else limiter
                 cooldown = 1200 if cooldown == "" else cooldown
                 break
@@ -109,7 +101,6 @@ def config(configpath):
     # Loading Config:
     else:
         vars_dict = json.load(open(configpath))
-
     # YARA Compilation:
     if vars_dict['yara_scanning']:
         vars_dict['search_rules'] = yara.compile(filepaths={f.replace('.yar', ''): path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar")})
@@ -123,8 +114,8 @@ def config(configpath):
                 print("\x1b[94m---------------------\x1b[0m")
     finally:
         print("\n")
-    return vars_dict
-# Main Scraping and Classification Functions:
+        return vars_dict
+# YARA and Saving Function:
 def archive_engine(prescan_text, proch, vars_dict):
     """
     This function scans files for YARA matches (if enabled) and saves files.
@@ -175,7 +166,8 @@ def archive_engine(prescan_text, proch, vars_dict):
             codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', 'utf-8').write(prescan_text)
     else:
         codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8").write(prescan_text)
-def Non_API_Search(vars_dict):
+# Scraping Function:
+def non_api_search(vars_dict):
     """
     This function fetches the pastebin archive and all the pastes in it. It passes them to archive_engine(), then sleeps
     per the time specified by vars_dict['cooldown']
@@ -185,45 +177,38 @@ def Non_API_Search(vars_dict):
     """
     arch_runs = 0
     while True:
-        if arch_runs > 0:
-            lib.print_status(f"Runs: {arch_runs}")
-            if arch_runs >= vars_dict['stop_input'] and vars_dict['stop_input'] is False:
+        lib.print_status(f"Runs: {arch_runs}")
+        lib.print_status(f"Getting archived pastes...")
+        arch_page = lib.connect("https://pastebin.com/archive")
+        arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
+        sleep(2)
+        lib.print_status(f"Finding params...")
+        table = arch_soup.find("table", attrs={'class': "maintable"})
+        tablehrefs = [(x + 1, y) for x, y in enumerate([a['href'] for a in table.findAll('a', href=True) if 'archive' not in a['href']])]
+        # For each paste listed, connect and pass the text to archive_engine()
+        for h in tablehrefs:
+            proch = h[1][1:]
+            lib.print_success(f"Acting on param {proch}  [{h[0]}/{len(tablehrefs)}]...")
+            full_archpage = lib.connect(f"https://pastebin.com/{proch}")
+            item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
+            # Fetch the raw text and pass to archive_engine()
+            unprocessed = item_soup.find('textarea').contents[0]
+            archive_engine(unprocessed, proch, vars_dict)
+            # Increment the run
+            arch_runs += 1
+            sleep(vars_dict['limiter'])
+        # if not running in a constant loop, check if the runs is greater or equal to the stop_input
+        # If yes, exit. If no, wait the cooldown and continue
+        if isinstance(vars_dict['stop_input'], int):
+            if arch_runs >= vars_dict['stop_input']:
                 lib.print_success(f"Runs Complete, Operation Finished...")
                 exit()
-            else:
-                lib.print_status(f"Pastes fetched, cooling down for {vars_dict['cooldown']} seconds...")
-                sleep(vars_dict['cooldown']/2)
-                lib.print_status(f"Halfway through cooldown")
-                sleep(vars_dict['cooldown']/2)
-                lib.print_status(f"resuming...")
-        if arch_runs < vars_dict['stop_input'] or vars_dict['stop_input'] is True:
-            arch_page = connect("https://pastebin.com/archive")
-            arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
-            sleep(2)
-            lib.print_status(f"Getting archived pastes...")
-            if 'access denied' in arch_page.text:
-                lib.print_error(f"IP Temporarily suspending, pausing until the ban is lifted. Estimated time: one hour...")
-                sleep(vars_dict['cooldown'])
-                lib.print_status(f"Process resumed...")
-                continue
-            else:
-                pass
-            lib.print_status(f"Finding params...")
-            table = arch_soup.find("table", attrs={'class': "maintable"})
-            tablehrefs = [(x+1, y) for x,y in enumerate([a['href'] for a in table.findAll('a', href=True) if 'archive' not in a['href']])]
-            for h in tablehrefs:
-                proch = h[1][1:]
-                lib.print_success(f"Acting on param {proch}  [{h[0]}/{len(tablehrefs)}]...")
-                full_archpage = connect(f"https://pastebin.com/{proch}")
-                item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
-                unprocessed = item_soup.find('textarea').contents[0] # Fetch the raw text in the paste.
-                archive_engine(unprocessed, proch, vars_dict)
-                arch_runs += 1
-                sleep(vars_dict['limiter'])
-                continue
-        else:
-            lib.print_success(f"Operation Finished...")
-            break
+        lib.print_status(f"Pastes fetched, cooling down for {vars_dict['cooldown']} seconds...")
+        sleep(vars_dict['cooldown'] / 2)
+        lib.print_status(f"Halfway through cooldown")
+        sleep(vars_dict['cooldown'] / 2)
+        lib.print_status(f"resuming...")
+        continue
 # Main
 def main(args):
     lib.print_title("""
@@ -238,7 +223,7 @@ def main(args):
     """)
     vars_dict = config(args[1]) if len(args) > 1 else config("")
     try:
-        Non_API_Search(vars_dict)
+        non_api_search(vars_dict)
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled...")
 

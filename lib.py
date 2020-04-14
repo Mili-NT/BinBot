@@ -95,5 +95,15 @@ def print_title(msg):
         print(msg)
     else:
         print(f"\033[35m {msg}")
-
-
+#
+# Misc Program Functions:
+#
+def connect(url):
+    """
+    :param url: address to connect to
+    :return: Response object for the page connected to
+    """
+    try:
+        return requests.get(url, headers=random_headers())
+    except Exception as e:
+        print_error(e)
