@@ -17,7 +17,7 @@ Make sure to customize your `blacklist.yar` and `keywords.yar` file.
 If no path is passed, binbot will run a manual setup.
 ## Credits:
 * Binary rules found [here](https://github.com/InQuest/awesome-yara#rules) and credited individually in the rule files.
-* KindRedSec's [pastebin video](https://www.youtube.com/watch?v=y5OObEOWuDY) was an inspiration
+* KindRedSec's [pastebin video](https://www.youtube.com/watch?v=y5OObEOWuDY) was an inspiration for the base64 rules
 * [r/learnpython](https://www.reddit.com/r/learnpython/), as always
 ## Planned Features and TODO:
 - API integration
