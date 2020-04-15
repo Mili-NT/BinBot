@@ -103,6 +103,11 @@ def print_title(msg):
 # YARA Functions:
 #
 def binary_matching(vars_dict, filepath):
+    """
+    :param vars_dict: The dictionary of variables returned from config()
+    :param filepath: the filepath of the file to scan
+    :return: Nothing
+    """
     matches = vars_dict['binary_rules'].match(data=codecs.open(filepath, 'rb', 'utf-8'))
     if matches:
         components = {'rule': matches[0].rule,
@@ -113,6 +118,13 @@ def binary_matching(vars_dict, filepath):
         print_success(f"Matched item: {components['term']}")
         os.rename(filepath, f"{os.path.split(filepath)[0]}/{components['rule']}.file")
 def general_matching(vars_dict, prescan_text, proch, components):
+    """
+    :param vars_dict: The dictionary of variables returned from config()
+    :param prescan_text: The text parsed from the paste
+    :param proch: The URL parameter of the individual paste
+    :param components: The rule, term, and id of the match
+    :return: Nothing
+    """
     if components['rule'] == 'b64Artifacts':
         print_success(f"Base64 Artifact Found: [{components['term']}]")
         # If gzipped, decompress:
