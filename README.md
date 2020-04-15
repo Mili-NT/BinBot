@@ -20,5 +20,5 @@ If no path is passed, binbot will run a manual setup.
 * KindRedSec's [pastebin video](https://www.youtube.com/watch?v=y5OObEOWuDY) was an inspiration for the base64 rules
 * [r/learnpython](https://www.reddit.com/r/learnpython/), as always
 ## Planned Features and TODO:
-- API integration
+- Bug Fixes
 

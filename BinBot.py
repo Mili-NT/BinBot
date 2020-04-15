@@ -145,7 +145,7 @@ def archive_engine(prescan_text, proch, vars_dict):
     else:
         codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8").write(prescan_text)
 # Scraping Function:
-def non_api_search(vars_dict):
+def scrape(vars_dict):
     """
     This function fetches the pastebin archive and all the pastes in it. It passes them to archive_engine(), then sleeps
     per the time specified by vars_dict['cooldown']
@@ -206,7 +206,7 @@ def main(args):
     # If not, it passes an invalid path "" which results in manual setup
     vars_dict = config(args[1]) if len(args) > 1 else config("")
     try:
-        non_api_search(vars_dict)
+        scrape(vars_dict)
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled...")
 
