@@ -45,7 +45,7 @@ def config(configpath):
             workpath = syspath[0] if workpath.lower() == 'curdir' else workpath
             if path.isdir(workpath):
                 lib.print_success("Valid Path...")
-                workpath = f'{workpath}/' if workpath.endswith('\\') or workpath.endswith('/') else workpath
+                workpath = workpath if any([workpath.endswith('\\'), workpath.endswith('/')]) else f'{workpath}/'
                 break
             else:
                 lib.print_error("Invalid path, check input...")
