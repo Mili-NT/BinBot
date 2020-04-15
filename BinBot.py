@@ -179,7 +179,7 @@ def non_api_search(vars_dict):
             sleep(vars_dict['limiter'])
         # if not running in a constant loop, check if the runs is greater or equal to the stop_input
         # If yes, exit. If no, continue
-        if isinstance(vars_dict['stop_input'], int):
+        if str(vars_dict['stop_input']) != 'True':
             if arch_runs >= vars_dict['stop_input']:
                 lib.print_success(f"Runs Complete, Operation Finished...")
                 exit()
