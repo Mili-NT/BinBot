@@ -95,6 +95,7 @@ def config(configpath):
         savechoice = lib.print_input('Save configuration to file for repeated use? [y]/[n]')
         if savechoice.lower() == 'y':
             configname = lib.print_input("Enter the config name (no extension)")
+            configname = configname.split(".")[0] if '.json' in configname else configname
             json.dump(vars_dict, open(f"{configname}.json", 'w'))
     # Loading Config:
     else:
