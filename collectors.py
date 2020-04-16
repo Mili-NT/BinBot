@@ -70,12 +70,12 @@ def slexy(vars_dict):
         # Connect and fetch the raw text
         document_soup = BeautifulSoup(lib.connect(f'https://slexy.org{param}').text, 'html.parser')
         document_table = document_soup.findAll("table")
-        raw_parameter = [a['href'] for a in document_table[1].findAll('a', href=True) if 'raw' in a['href']]
-        unprocessed = BeautifulSoup(lib.connect(f'https://slexy.org{raw_parameter}').text, 'html.parser').find('pre').contents[0]
+        raw_parameter = [a['href'] for a in document_table[1].findAll('a', href=True) if 'raw' in a['href']][0]
+        unprocessed = BeautifulSoup(lib.connect(f'https://slexy.org{raw_parameter}').text, 'html.parser')
         # Pass to archive engine
         # We remove the /view/ from the param for file naming purposes
         identifier = f'slexy-{param.split("/view/")[1]}'
-        lib.archive_engine(unprocessed, identifier, vars_dict)
+        lib.archive_engine(str(unprocessed), identifier, vars_dict)
         sleep(5) if vars_dict['limiter'] < 5 else sleep(vars_dict['limiter'])
     lib.print_success("All slexy pastes processed.")
     sleep(vars_dict['cooldown'])
