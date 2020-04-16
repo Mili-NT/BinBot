@@ -139,8 +139,6 @@ def main(args):
     # If not, it passes an invalid path "" which results in manual setup
     vars_dict = config(args[1]) if len(args) > 1 else config("")
     try:
-        collectors.ixio(vars_dict)
-        exit()
         # This creates a thread for every service enabled
         with ThreadPoolExecutor(max_workers=len(vars_dict['services'])) as executor:
             for service in vars_dict['services']:
