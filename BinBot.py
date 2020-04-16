@@ -52,7 +52,7 @@ def config(configpath):
         # Services to Enable:
         while True:
             for x in collectors.service_names.keys():
-                print(f"[{x}]: {collectors.service_names[x]}")
+                lib.print_status(f"[{x}]: {collectors.service_names[x]}")
             service_choice = lib.print_input("Enter the number(s) of the services you wish to scrape, "
                                        "separated by a comma").replace(" ", '').split(',')
             services = [collectors.service_names[int(x)] for x in service_choice if int(x) in collectors.service_names.keys()]
