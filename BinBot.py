@@ -61,26 +61,21 @@ def config(configpath):
             break
         # Looping, Limiter, and Cooldown Input:
         while True:
-            try:
-                loop_input = lib.print_input("Run in a constant loop? [y]/[n]")
-                if loop_input.lower() == 'y':
-                    stop_input = True
-                elif loop_input.lower() == 'n':
-                    stop_input = int(
-                        lib.print_input("Enter the amount of individual pastes to fetch: "))
-                    # If they enter 0 or below pastes to fetch, run in an infinite loop:
-                    stop_input = True if stop_input <= 0 else stop_input
-                # Limiter and Cooldown
-                limiter = int(lib.print_input("Enter the request limit you wish to use (recommended: 5)"))
-                cooldown = int(
-                    lib.print_input("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
-                # If no values are entered, select the recommended
-                limiter = 5 if limiter <= 0 else limiter
-                cooldown = 1200 if cooldown <= 0 else cooldown
-                break
-            except ValueError:
-                lib.print_error("Invalid Input.")
-                continue
+            loop_input = lib.print_input("Run in a constant loop? [y]/[n]")
+            if loop_input.lower() == 'y':
+                stop_input = True
+            else:
+                stop_input = int(lib.print_input("Enter the amount of times you want to fetch the archives: "))
+                # If they enter 0 or below pastes to fetch, run in an infinite loop:
+                stop_input = True if stop_input <= 0 else stop_input
+            # Limiter and Cooldown
+            limiter = int(lib.print_input("Enter the request limit you wish to use (recommended: 5)"))
+            cooldown = int(
+                lib.print_input("Enter the cooldown between IP bans/Archive scrapes (recommended: 600)"))
+            # If no values are entered, select the recommended
+            limiter = 5 if any([limiter <= 0, isinstance(limiter, int) is False]) else limiter
+            cooldown = 600 if any([cooldown <= 0, isinstance(cooldown, int) is False]) else cooldown
+            break
         # YARA
         while True:
             yara_choice = lib.print_input("Enable scanning documents using YARA rules? [y/n]")
