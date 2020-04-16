@@ -45,7 +45,6 @@ def ixio(vars_dict):
     parameters = set([a['href'].replace('/', '') for a in soup.findAll('a', href=True)])
     # Loop through parameters and get raw text
     for param in parameters:
-        print(f'http://ix.io/{param}')
         document_soup = BeautifulSoup(lib.connect(f'http://ix.io/{param}').text, 'html.parser')
         # Pass raw text to archive engine
         identifier = f'ixio-{param}'
