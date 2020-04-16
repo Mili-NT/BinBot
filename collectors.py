@@ -12,7 +12,7 @@ def pastebin(vars_dict):
     :return: Nothing
     """
     # Fetch the pastebin public archive
-    lib.print_status(f"Getting archived pastes...")
+    lib.print_status(f"Starting pastebin run...")
     arch_page = lib.connect("https://pastebin.com/archive")
     arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
     sleep(2)
@@ -39,6 +39,7 @@ def ixio(vars_dict):
     :param vars_dict: dict of necessary variables returned from config()
     :return: nothing
     """
+    lib.print_status("Starting ix.io run...")
     # Connect to archive and gather individual document parameters
     soup = BeautifulSoup(lib.connect("http://ix.io/user/").text, 'html.parser')
     # The parameter is sanitized (has its leading and trailing forward slashes removed) during this comprehension
@@ -61,6 +62,7 @@ def slexy(vars_dict):
     :param vars_dict: dict of necessary variables returned from config()
     :return: nothing
     """
+    lib.print_status("Starting slexy run...")
     # Connect to archive and get parameters for individual documents
     soup = BeautifulSoup(lib.connect("https://slexy.org/recent").text, 'html.parser')
     table = soup.find("table", attrs={'id': "recent_pastes"})
