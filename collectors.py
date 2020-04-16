@@ -1,7 +1,6 @@
 import lib
 from time import sleep
 from bs4 import BeautifulSoup
-
 # Scraping functions:
 def pastebin(vars_dict):
     """
@@ -81,8 +80,6 @@ def slexy(vars_dict):
         sleep(5) if vars_dict['limiter'] < 5 else sleep(vars_dict['limiter'])
     lib.print_success("All slexy pastes processed.")
     sleep(vars_dict['cooldown'])
-
 # Dict for selecting services to enable
 service_names = {1: 'pastebin', 2: 'ix.io', 3:'slexy'}
-# Dict for calling the scraping functions by enumerating vars_dict['services']
-services = {'pastebin':pastebin, 'ixio':ixio, 'slexy':slexy}
+

@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------
+
 import sys
 import lib
 import json
@@ -139,11 +140,13 @@ def main(args):
     vars_dict = config(args[1]) if len(args) > 1 else config("")
     try:
         # This creates a thread for every service enabled
+        service_functions = {'pastebin': collectors.pastebin, 'ixio': collectors.ixio, 'slexy': collectors.slexy}
         with ThreadPoolExecutor(max_workers=len(vars_dict['services'])) as executor:
             for service in vars_dict['services']:
-                executor.submit(collectors.services[service], vars_dict)
+                executor.submit(service_functions[service], vars_dict)
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled...")
+        exit()
 
 if __name__ == "__main__":
     main(sys.argv)
