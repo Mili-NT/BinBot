@@ -26,5 +26,5 @@ and credited individually in the rule files.
 was an inspiration for the base64 rules
 * [r/learnpython](https://www.reddit.com/r/learnpython/), as always
 ## Planned Features and TODO:
-- Bug Fixes
+- Major Development and Bug Testing
 
