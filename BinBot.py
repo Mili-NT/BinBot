@@ -22,6 +22,7 @@ import lib
 import json
 import yara
 import collectors
+from time import sleep
 from os import path, listdir
 from sys import path as syspath
 from concurrent.futures import ThreadPoolExecutor
@@ -140,9 +141,18 @@ def main(args):
     vars_dict = config(args[1]) if len(args) > 1 else config("")
     try:
         # This creates a thread for every service enabled
-        with ThreadPoolExecutor(max_workers=len(vars_dict['services'])) as executor:
-            for service in vars_dict['services']:
-                executor.submit(collectors.services[service], vars_dict)
+        runs = 0
+        while True:
+            with ThreadPoolExecutor(max_workers=len(vars_dict['services'])) as executor:
+                for service in vars_dict['services']:
+                    executor.submit(collectors.services[service], vars_dict)
+            runs += 1
+            if str(vars_dict['stop_input']) != 'True':
+                if runs >= vars_dict['stop_input']:
+                    lib.print_success(f"Runs Complete, Operation Finished...")
+                    exit()
+            sleep(vars_dict['cooldown'])
+
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled...")
         exit()

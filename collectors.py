@@ -29,7 +29,6 @@ def pastebin(vars_dict):
         lib.archive_engine(unprocessed, identifier, vars_dict)
         sleep(vars_dict['limiter'])
     lib.print_success("All pastebin pastes processed.")
-    sleep(vars_dict['cooldown'])
 def ixio(vars_dict):
     """
     This is the scraping function for ix.io. It works very similar to the pastebin() function,
@@ -51,7 +50,6 @@ def ixio(vars_dict):
         lib.archive_engine(str(document_soup), identifier, vars_dict)
         sleep(vars_dict['limiter'])
     lib.print_success("All ix.io pastes processed.")
-    sleep(vars_dict['cooldown'])
 def slexy(vars_dict):
     """
     Scraping function for slexy. This one is almost identical to ix.io, with the exception of having some
@@ -78,7 +76,6 @@ def slexy(vars_dict):
         lib.archive_engine(str(unprocessed), identifier, vars_dict)
         sleep(5) if vars_dict['limiter'] < 5 else sleep(vars_dict['limiter'])
     lib.print_success("All slexy pastes processed.")
-    sleep(vars_dict['cooldown'])
 # Dict for selecting services to enable
 service_names = {1: 'pastebin', 2: 'ixio', 3:'slexy'}
 # Dict for calling the scraping functions by enumerating vars_dict['services']
