@@ -26,7 +26,8 @@ def pastebin(vars_dict):
         document_soup = BeautifulSoup(document_page.text, 'html.parser')
         # Fetch the raw text and pass to archive_engine()
         unprocessed = document_soup.find('textarea').contents[0]
-        lib.archive_engine(unprocessed, param, vars_dict)
+        identifier = f'pastebin-{param}'
+        lib.archive_engine(unprocessed, identifier, vars_dict)
         sleep(vars_dict['limiter'])
     lib.print_success("All pastebin pastes processed.")
     sleep(vars_dict['cooldown'])
@@ -47,7 +48,8 @@ def ixio(vars_dict):
         document_soup = BeautifulSoup(lib.connect(f'http://ix.io/{param}'), 'html.parser')
         unprocessed = document_soup.find('pre').contents[0]
         # Pass raw text to archive engine
-        lib.archive_engine(unprocessed, param, vars_dict)
+        identifier = f'ixio-{param}'
+        lib.archive_engine(unprocessed, identifier, vars_dict)
         sleep(vars_dict['limiter'])
     lib.print_success("All ix.io pastes processed.")
     sleep(vars_dict['cooldown'])
@@ -72,11 +74,11 @@ def slexy(vars_dict):
         unprocessed = BeautifulSoup(lib.connect(f'https://slexy.org{raw_parameter}').text, 'html.parser').find('pre').contents[0]
         # Pass to archive engine
         # We remove the /view/ from the param for file naming purposes
-        lib.archive_engine(unprocessed, param.split("/view/")[1], vars_dict)
+        identifier = f'slexy-{param.split("/view/")[1]}'
+        lib.archive_engine(unprocessed, identifier, vars_dict)
         sleep(5) if vars_dict['limiter'] < 5 else sleep(vars_dict['limiter'])
     lib.print_success("All slexy pastes processed.")
     sleep(vars_dict['cooldown'])
-
 # Dict for selecting services to enable
 service_names = {1: 'pastebin', 2: 'ix.io', 3:'slexy'}
 # Dict for calling the scraping functions by enumerating vars_dict['services']
