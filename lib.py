@@ -57,7 +57,7 @@ def random_proxies():
     selected = choice(proxies)
     return {f"{selected.split(':')[0]}":selected}
 def random_headers():
-    return { 'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
+    return {'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
 #
 # Printing Functions:
 #
@@ -157,7 +157,7 @@ def general_matching(vars_dict, prescan_text, proch, components):
     else:
         print_success(f"{components['rule']} match found: {components['term']}")
         codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
-def archive_engine(prescan_text, identifier, vars_dict):
+def archive_engine(prescan_text, identifier, vars_dict): # This is the matching function, very important
     """
     This function scans files for YARA matches (if enabled) and saves files.
 
