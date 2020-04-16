@@ -54,9 +54,9 @@ def config(configpath):
             for x in collectors.service_names.keys():
                 print(f"[{x}]: {collectors.service_names[x]}")
             service_choice = lib.print_input("Enter the number(s) of the services you wish to scrape, "
-                                       "separated by a comma: ").replace(" ", '').split(',')
-            services = [service_choice[x] for x in service_choice if x in collectors.service_names.keys()]
-            services = collectors.service_names.values() if services == [] else services
+                                       "separated by a comma").replace(" ", '').split(',')
+            services = [collectors.service_names[int(x)] for x in service_choice if int(x) in collectors.service_names.keys()]
+            services = list(collectors.service_names.values()) if services == [] else services
             break
         # Looping, Limiter, and Cooldown Input:
         while True:
