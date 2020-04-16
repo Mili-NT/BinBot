@@ -146,7 +146,11 @@ def main(args):
                 if runs >= vars_dict['stop_input']:
                     lib.print_success(f"Runs Complete, Operation Finished...")
                     exit()
-            sleep(vars_dict['cooldown'])
+            lib.print_status(f"All services scraped, cooling down for {vars_dict['cooldown']} seconds")
+            sleep(vars_dict['cooldown'] / 2)
+            lib.print_status("Halfway through cooldown.")
+            sleep(vars_dict['cooldown'] / 2)
+            lib.print_status("Continuing...")
 
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled...")
