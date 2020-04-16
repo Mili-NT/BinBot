@@ -81,6 +81,6 @@ def slexy(vars_dict):
     lib.print_success("All slexy pastes processed.")
     sleep(vars_dict['cooldown'])
 # Dict for selecting services to enable
-service_names = {1: 'pastebin', 2: 'ix.io', 3:'slexy'}
+service_names = {1: 'pastebin', 2: 'ixio', 3:'slexy'}
 # Dict for calling the scraping functions by enumerating vars_dict['services']
 services = {'pastebin':pastebin, 'ixio':ixio, 'slexy':slexy}
