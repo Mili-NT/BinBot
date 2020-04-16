@@ -55,8 +55,8 @@ def config(configpath):
                 print(f"[{x}]: {collectors.service_names[x]}")
             service_choice = lib.print_input("Enter the number(s) of the services you wish to scrape, "
                                        "separated by a comma: ").replace(" ", '').split(',')
-            services = [x for x in service_choice if x in collectors.service_names.keys()]
-            services = collectors.service_names.keys() if services == [] else services
+            services = [service_choice[x] for x in service_choice if x in collectors.service_names.keys()]
+            services = collectors.service_names.values() if services == [] else services
             break
         # Looping, Limiter, and Cooldown Input:
         while True:
@@ -139,9 +139,10 @@ def main(args):
     # If not, it passes an invalid path "" which results in manual setup
     vars_dict = config(args[1]) if len(args) > 1 else config("")
     try:
+        # This creates a thread for every service enabled
         with ThreadPoolExecutor(max_workers=len(vars_dict['services'])) as executor:
-            for service_number in vars_dict['services']:
-                executor.submit(collectors.services[service_number], vars_dict)
+            for service in vars_dict['services']:
+                executor.submit(collectors.services[service], vars_dict)
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled...")
 
