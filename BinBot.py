@@ -140,10 +140,9 @@ def main(args):
     vars_dict = config(args[1]) if len(args) > 1 else config("")
     try:
         # This creates a thread for every service enabled
-        service_functions = {'pastebin': collectors.pastebin, 'ixio': collectors.ixio, 'slexy': collectors.slexy}
         with ThreadPoolExecutor(max_workers=len(vars_dict['services'])) as executor:
             for service in vars_dict['services']:
-                executor.submit(service_functions[service], vars_dict)
+                executor.submit(collectors.services[service], vars_dict)
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled...")
         exit()
