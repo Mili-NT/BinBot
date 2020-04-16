@@ -45,11 +45,11 @@ def ixio(vars_dict):
     parameters = set([a['href'].replace('/', '') for a in soup.findAll('a', href=True)])
     # Loop through parameters and get raw text
     for param in parameters:
+        print(f'http://ix.io/{param}')
         document_soup = BeautifulSoup(lib.connect(f'http://ix.io/{param}').text, 'html.parser')
-        unprocessed = document_soup.find('pre').contents[0]
         # Pass raw text to archive engine
         identifier = f'ixio-{param}'
-        lib.archive_engine(unprocessed, identifier, vars_dict)
+        lib.archive_engine(str(document_soup), identifier, vars_dict)
         sleep(vars_dict['limiter'])
     lib.print_success("All ix.io pastes processed.")
     sleep(vars_dict['cooldown'])
