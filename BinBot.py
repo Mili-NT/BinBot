@@ -21,14 +21,13 @@ import sys
 import lib
 import json
 import yara
-import codecs
-from time import sleep
-from bs4 import BeautifulSoup
-from sys import path as syspath
+import collectors
 from os import path, listdir
+from sys import path as syspath
+from concurrent.futures import ThreadPoolExecutor
 
 # Author: Mili
-# No API key needed
+# No API key(s) needed
 
 # Setup Function:
 def config(configpath):
@@ -50,6 +49,15 @@ def config(configpath):
             else:
                 lib.print_error("Invalid path, check input...")
                 continue
+        # Services to Enable:
+        while True:
+            for x in collectors.service_names.keys():
+                print(f"[{x}]: {collectors.service_names[x]}")
+            service_choice = lib.print_input("Enter the number(s) of the services you wish to scrape, "
+                                       "separated by a comma: ").replace(" ", '').split(',')
+            services = [x for x in service_choice if x in collectors.service_names.keys()]
+            services = collectors.service_names.keys() if services == [] else services
+            break
         # Looping, Limiter, and Cooldown Input:
         while True:
             try:
@@ -66,8 +74,8 @@ def config(configpath):
                 cooldown = int(
                     lib.print_input("Enter the cooldown between IP bans/Archive scrapes (recommended: 1200)"))
                 # If no values are entered, select the recommended
-                limiter = 5 if limiter == "" else limiter
-                cooldown = 1200 if cooldown == "" else cooldown
+                limiter = 5 if limiter <= 0 else limiter
+                cooldown = 1200 if cooldown <= 0 else cooldown
                 break
             except ValueError:
                 lib.print_error("Invalid Input.")
@@ -89,7 +97,8 @@ def config(configpath):
             'stop_input': stop_input,
             'limiter': limiter,
             'cooldown': cooldown,
-            'yara_scanning': yara_scanning
+            'yara_scanning': yara_scanning,
+            'services': services
         }
         # Saving
         savechoice = lib.print_input('Save configuration to file for repeated use? [y]/[n]')
@@ -114,82 +123,6 @@ def config(configpath):
     finally:
         print("\n")
         return vars_dict
-# Matching and Saving Function:
-def archive_engine(prescan_text, proch, vars_dict):
-    """
-    This function scans files for YARA matches (if enabled) and saves files.
-
-    :param prescan_text: The raw text of the paste
-    :param proch: The URL parameter of the paste (i.e: https://pastebin.com/{proch})
-    :param vars_dict: dict of variables returned from config()
-    :return: Nothing, saves files if they aren't blacklisted and if they are, does nothing
-    """
-    if vars_dict['yara_scanning'] is True:
-        matches = vars_dict['search_rules'].match(data=prescan_text)
-        # If there are matches, it saves them under different names
-        if matches:
-            components = {'rule': matches[0].rule,
-                          # If term is a string, do nothing. Else, decode as UTF-8
-                          'term': ((matches[0]).strings[0])[2] if isinstance(((matches[0]).strings[0])[2], str) else ((matches[0]).strings[0])[2].decode('UTF-8'),
-                          'id': (((matches[0]).strings[0])[1])[1:]}
-            # If it's blacklisted, announce and pass
-            if components['rule'] == 'blacklist':
-                lib.print_status(f"Blacklisted term detected: [{components['term']}]")
-            # Otherwise, continue checking rules
-            else:
-                lib.general_matching(vars_dict, prescan_text, proch, components)
-        #If no matches are found, it just writes it with the parameter as a name
-        else:
-            lib.print_status(f"No matches in document: /{proch}")
-            codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', 'utf-8').write(prescan_text)
-    else:
-        codecs.open(f"{vars_dict['workpath']}{proch}.txt", 'w+', "utf-8").write(prescan_text)
-# Scraping Function:
-def scrape(vars_dict):
-    """
-    This function fetches the pastebin archive and all the pastes in it. It passes them to archive_engine(), then sleeps
-    per the time specified by vars_dict['cooldown']
-
-    :param vars_dict: dict of necessary variables returned from config()
-    :return: Nothing
-    """
-    arch_runs = 0
-    while True:
-        lib.print_status(f"Runs: {arch_runs}")
-        # Fetch the pastebin public archive
-        lib.print_status(f"Getting archived pastes...")
-        arch_page = lib.connect("https://pastebin.com/archive")
-        arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
-        sleep(2)
-        # Parse the archive HTML to get the individual document URLs
-        lib.print_status(f"Finding params...")
-        table = arch_soup.find("table", attrs={'class': "maintable"})
-        tablehrefs = [(x + 1, y) for x, y in enumerate([a['href'] for a in table.findAll('a', href=True) if 'archive' not in a['href']])]
-        # For each paste listed, connect and pass the text to archive_engine()
-        for h in tablehrefs:
-            proch = h[1][1:]
-            lib.print_success(f"Acting on param {proch}  [{h[0]}/{len(tablehrefs)}]...")
-            full_archpage = lib.connect(f"https://pastebin.com/{proch}")
-            item_soup = BeautifulSoup(full_archpage.text, 'html.parser')
-            # Fetch the raw text and pass to archive_engine()
-            unprocessed = item_soup.find('textarea').contents[0]
-            archive_engine(unprocessed, proch, vars_dict)
-            # Increment the run
-            arch_runs += 1
-            sleep(vars_dict['limiter'])
-        # if not running in a constant loop, check if the runs is greater or equal to the stop_input
-        # If yes, exit. If no, continue
-        if str(vars_dict['stop_input']) != 'True':
-            if arch_runs >= vars_dict['stop_input']:
-                lib.print_success(f"Runs Complete, Operation Finished...")
-                exit()
-        # Cooldown after all individual pastes are scanned
-        lib.print_status(f"Pastes fetched, cooling down for {vars_dict['cooldown']} seconds...")
-        sleep(vars_dict['cooldown'] / 2)
-        lib.print_status(f"Halfway through cooldown")
-        sleep(vars_dict['cooldown'] / 2)
-        lib.print_status(f"resuming...")
-        continue
 # Main
 def main(args):
     lib.print_title("""
@@ -206,7 +139,9 @@ def main(args):
     # If not, it passes an invalid path "" which results in manual setup
     vars_dict = config(args[1]) if len(args) > 1 else config("")
     try:
-        scrape(vars_dict)
+        with ThreadPoolExecutor(max_workers=len(vars_dict['services'])) as executor:
+            for service_number in vars_dict['services']:
+                executor.submit(collectors.services[service_number], vars_dict)
     except KeyboardInterrupt:
         lib.print_status(f"Operation cancelled...")
 

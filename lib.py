@@ -157,6 +157,35 @@ def general_matching(vars_dict, prescan_text, proch, components):
     else:
         print_success(f"{components['rule']} match found: {components['term']}")
         codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+def archive_engine(prescan_text, identifier, vars_dict):
+    """
+    This function scans files for YARA matches (if enabled) and saves files.
+
+    :param prescan_text: The raw text of the paste
+    :param identifier: The URL parameter of the paste (i.e: https://pastebin.com/{proch})
+    :param vars_dict: dict of variables returned from config()
+    :return: Nothing, saves files if they aren't blacklisted and if they are, does nothing
+    """
+    if vars_dict['yara_scanning'] is True:
+        matches = vars_dict['search_rules'].match(data=prescan_text)
+        # If there are matches, it saves them under different names
+        if matches:
+            components = {'rule': matches[0].rule,
+                          # If term is a string, do nothing. Else, decode as UTF-8
+                          'term': ((matches[0]).strings[0])[2] if isinstance(((matches[0]).strings[0])[2], str) else ((matches[0]).strings[0])[2].decode('UTF-8'),
+                          'id': (((matches[0]).strings[0])[1])[1:]}
+            # If it's blacklisted, announce and pass
+            if components['rule'] == 'blacklist':
+                print_status(f"Blacklisted term detected: [{components['term']}]")
+            # Otherwise, continue checking rules
+            else:
+                general_matching(vars_dict, prescan_text, identifier, components)
+        #If no matches are found, it just writes it with the parameter as a name
+        else:
+            print_status(f"No matches in document: /{identifier}")
+            codecs.open(f"{vars_dict['workpath']}{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
+    else:
+        codecs.open(f"{vars_dict['workpath']}{identifier}.txt", 'w+', "utf-8").write(prescan_text)
 #
 # Misc Program Functions:
 #
