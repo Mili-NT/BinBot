@@ -27,5 +27,5 @@ was an inspiration for the base64 rules
 * [r/learnpython](https://www.reddit.com/r/learnpython/), as always
 ## Planned Features and TODO:
 - Fix bug with single URL documents (ix.io only?) causing bs4 decoding error
-- Add fallbacks/error handling for documents returning NoneType
+- Add fallbacks/error messages for documents returning NoneType
 
