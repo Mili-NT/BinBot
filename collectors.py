@@ -1,6 +1,35 @@
 import lib
 from time import sleep
 from bs4 import BeautifulSoup
+
+# Template Function:
+def template_function(vars_dict):
+    """
+    :param vars_dict: All scraping functions are passed vars_dict, which contains all variables needed for operation
+    :return: Nothing, passes the documents to lib.archive_engine()
+    """
+    lib.print_status("Starting <enter service name> run")
+    # Connect to the archive page of the service and create a soup object
+    template_page = lib.connect("https://templatebin.com/archive")
+    template_soup = BeautifulSoup(template_page.text, 'html.parser')
+    # parse the archive page to get links to individual documents.
+    # The actual code here will vary depending on the HTML of your target service
+    table = template_soup.find("table", attrs={'class':'table_of_documents'})
+    parameters = [a['href'] for a in table.findAll('a', href=True)]
+    # Loop through each parameter and get the document:
+    for param in parameters:
+        # connect to document and make a soup object:
+        document_page = lib.connect(f"https://templatebin.com/{param}")
+        document_soup = BeautifulSoup(document_page.text, 'html.parser')
+        # Do whatever html work (if any) you need to get the raw text.
+        # If it's just in a <pre> tag, you can simple do str(document_soup)
+        unprocessed = document_soup.find('textarea').contents[0]
+        # the indentifer is used to name the file:
+        identifier = f"service_name-{param}"
+        # Pass the text to lib.archive_engine() for matching and saving:
+        lib.archive_engine(unprocessed, identifier, vars_dict)
+        # and wait for the amount of time specified by limiter:
+        sleep(vars_dict['limiter'])
 # Scraping functions:
 def pastebin(vars_dict):
     """
