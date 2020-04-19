@@ -51,6 +51,7 @@ def config(configpath):
                 continue
             savechoice = input("Save all documents (Enter N to only save matched documents)? [y/n]: ")
             saveall = True if savechoice.lower() in ['y', 'yes'] else False
+            break
         # Services to Enable:
         while True:
             for x in collectors.service_names.keys():
