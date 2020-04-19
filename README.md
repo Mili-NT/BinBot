@@ -13,8 +13,9 @@ to be ran on text files or `yara_rules/binary_rules` to be ran on executable fil
 
 Make sure to customize your `blacklist.yar` and `keywords.yar` file. 
 ## Currently Supported Services:
-* Pastebin
-* ix.io
+* [Pastebin](https://pastebin.com/)
+* [ix.io](http://ix.io/)
+* [slexy](https://slexy.org/)
 ## Usage:
 `python3 BinBot.py <path to configuration file>`
 
