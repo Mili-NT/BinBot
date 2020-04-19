@@ -38,7 +38,7 @@ def config(configpath):
     """
     # Manual Setup:
     if path.isfile(configpath) is False:
-        # Saving options:
+        # Saving options (workpath and saveall):
         while True:
             workpath = lib.print_input(
                 "Enter the path you wish to save text documents to (enter curdir for current directory)")
@@ -52,7 +52,7 @@ def config(configpath):
             savechoice = input("Save all documents (Enter N to only save matched documents)? [y/n]: ")
             saveall = True if savechoice.lower() in ['y', 'yes'] else False
             break
-        # Services to Enable:
+        # Services to Enable (services):
         while True:
             for x in collectors.service_names.keys():
                 lib.print_status(f"[{x}]: {collectors.service_names[x]}")
@@ -61,7 +61,7 @@ def config(configpath):
             services = [collectors.service_names[int(x)] for x in service_choice if int(x) in collectors.service_names.keys()]
             services = list(collectors.service_names.values()) if services == [] else services
             break
-        # Looping, Limiter, and Cooldown Input:
+        # Looping, Limiter, and Cooldown Input (stop_input, limiter, cooldown):
         while True:
             loop_input = lib.print_input("Run in a constant loop? [y]/[n]")
             if loop_input.lower() == 'y':
@@ -78,7 +78,7 @@ def config(configpath):
             limiter = 5 if any([limiter <= 0, isinstance(limiter, int) is False]) else limiter
             cooldown = 600 if any([cooldown <= 0, isinstance(cooldown, int) is False]) else cooldown
             break
-        # YARA
+        # YARA (yara_scanning)
         while True:
             yara_choice = lib.print_input("Enable scanning documents using YARA rules? [y/n]")
             if yara_choice.lower() not in ['y', 'n', 'yes', 'no']:
@@ -109,6 +109,7 @@ def config(configpath):
     else:
         vars_dict = json.load(open(configpath))
     # YARA Compilation:
+    # YARA rules aren't written to files because they cant be serialized
     if vars_dict['yara_scanning']:
         vars_dict['search_rules'] = yara.compile(filepaths={f.split('.')[0]: path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar") or f.endswith(".yara")})
         vars_dict['binary_rules'] = yara.compile(filepaths={f.split('.')[0]: path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/binary_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(".yar") or f.endswith(".yara")})
@@ -145,6 +146,8 @@ def main(args):
                 for service in vars_dict['services']:
                     executor.submit(collectors.services[service], vars_dict)
             runs += 1
+            # This line is a little weird, but due to True == 1 being True, isinstance(vars_dict['stop_input'], int)
+            # wouldnt work.
             if str(vars_dict['stop_input']) != 'True':
                 if runs >= vars_dict['stop_input']:
                     lib.print_success(f"Runs Complete, Operation Finished...")

@@ -104,6 +104,10 @@ def print_title(msg):
 #
 def binary_matching(vars_dict, filepath):
     """
+    This handles running binary rules (i.e, for executables) on documents
+
+    TODO: This needs to be ran on files that are saved under custom rules as well
+
     :param vars_dict: The dictionary of variables returned from config()
     :param filepath: the filepath of the file to scan
     :return: Nothing
@@ -119,6 +123,9 @@ def binary_matching(vars_dict, filepath):
         os.rename(filepath, f"{os.path.split(filepath)[0]}/{components['rule']}.file")
 def general_matching(vars_dict, prescan_text, identifier, components):
     """
+    This function handles all the categorizing for matched documents.
+    It also passes all base64 encoded files to binary_matching.
+
     :param vars_dict: The dictionary of variables returned from config()
     :param prescan_text: The text parsed from the paste
     :param identifier: The service and URL parameter of the individual paste
@@ -180,7 +187,7 @@ def archive_engine(prescan_text, identifier, vars_dict): # This is the matching 
             # Otherwise, continue checking rules
             else:
                 general_matching(vars_dict, prescan_text, identifier, components)
-        #If no matches are found, it just writes it with the parameter as a name
+        #If no matches are found, it just writes it with the parameter as a name IF saveall is True.
         else:
             print_status(f"No matches in document: {identifier}")
             if vars_dict['saveall']:
