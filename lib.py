@@ -183,7 +183,8 @@ def archive_engine(prescan_text, identifier, vars_dict): # This is the matching 
         #If no matches are found, it just writes it with the parameter as a name
         else:
             print_status(f"No matches in document: {identifier}")
-            codecs.open(f"{vars_dict['workpath']}{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
+            if vars_dict['saveall']:
+                codecs.open(f"{vars_dict['workpath']}{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     else:
         codecs.open(f"{vars_dict['workpath']}{identifier}.txt", 'w+', "utf-8").write(prescan_text)
 #

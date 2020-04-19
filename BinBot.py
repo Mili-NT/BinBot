@@ -38,7 +38,7 @@ def config(configpath):
     """
     # Manual Setup:
     if path.isfile(configpath) is False:
-        # Save Path Input:
+        # Saving options:
         while True:
             workpath = lib.print_input(
                 "Enter the path you wish to save text documents to (enter curdir for current directory)")
@@ -46,10 +46,11 @@ def config(configpath):
             if path.isdir(workpath):
                 lib.print_success("Valid Path...")
                 workpath = workpath if any([workpath.endswith('\\'), workpath.endswith('/')]) else f'{workpath}/'
-                break
             else:
                 lib.print_error("Invalid path, check input...")
                 continue
+            savechoice = input("Save all documents (Enter N to only save matched documents)? [y/n]: ")
+            saveall = True if savechoice.lower() in ['y', 'yes'] else False
         # Services to Enable:
         while True:
             for x in collectors.service_names.keys():
@@ -94,7 +95,8 @@ def config(configpath):
             'limiter': limiter,
             'cooldown': cooldown,
             'yara_scanning': yara_scanning,
-            'services': services
+            'services': services,
+            'saveall': saveall,
         }
         # Saving
         savechoice = lib.print_input('Save configuration to file for repeated use? [y]/[n]')
