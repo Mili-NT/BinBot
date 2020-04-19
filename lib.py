@@ -57,7 +57,7 @@ def random_proxies():
     selected = choice(proxies)
     return {f"{selected.split(':')[0]}":selected}
 def random_headers():
-    return { 'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' }
+    return {'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
 #
 # Printing Functions:
 #
@@ -117,11 +117,11 @@ def binary_matching(vars_dict, filepath):
         print_success(f"{os.path.split(filepath)[1]} matches for {components['rule']}")
         print_success(f"Matched item: {components['term']}")
         os.rename(filepath, f"{os.path.split(filepath)[0]}/{components['rule']}.file")
-def general_matching(vars_dict, prescan_text, proch, components):
+def general_matching(vars_dict, prescan_text, identifier, components):
     """
     :param vars_dict: The dictionary of variables returned from config()
     :param prescan_text: The text parsed from the paste
-    :param proch: The URL parameter of the individual paste
+    :param identifier: The service and URL parameter of the individual paste
     :param components: The rule, term, and id of the match
     :return: Nothing
     """
@@ -129,11 +129,11 @@ def general_matching(vars_dict, prescan_text, proch, components):
         print_success(f"Base64 Artifact Found: [{components['term']}]")
         # If gzipped, decompress:
         if components['term'] == "H4sI":
-            filename = f"{vars_dict['workpath']}{proch}.file"
+            filename = f"{vars_dict['workpath']}{identifier}.file"
             codecs.open(filename, 'w+', 'utf-8').write(gzip.decompress(bytes(b64decode(prescan_text), 'utf-8')))
         # Otherwise, decode and save:
         else:
-            filename = f"{vars_dict['workpath']}{components['id']}_{proch}.txt"
+            filename = f"{vars_dict['workpath']}{components['id']}_{identifier}.txt"
             codecs.open(filename, 'w+', 'utf-8').write(b64decode(prescan_text))
         # If zipped, unzip and pass all files in unzipped directory to binary_matching
         if components['rule'] == "UEs":
@@ -146,17 +146,47 @@ def general_matching(vars_dict, prescan_text, proch, components):
             binary_matching(vars_dict, filename)
     elif components['rule'] == 'powershellArtifacts':
         print_success(f"Powershell Artifact Found: [{components['term']}]")
-        codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.ps1", 'w+', 'utf-8').write(prescan_text)
+        codecs.open(f"{vars_dict['workpath']}{components['term']}_{identifier}.ps1", 'w+', 'utf-8').write(prescan_text)
     elif components['rule'] == 'keywords':
         print_success(f"Keyword found: [{components['term']}]")
-        codecs.open(f"{vars_dict['workpath']}{components['term']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+        codecs.open(f"{vars_dict['workpath']}{components['term']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     elif components['rule'] == 'regex_pattern':
         print_success(f"{components['rule']} match found: {components['id']}")
-        codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+        codecs.open(f"{vars_dict['workpath']}{components['id']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     # Custom rules will be saved by this statement:
     else:
         print_success(f"{components['rule']} match found: {components['term']}")
-        codecs.open(f"{vars_dict['workpath']}{components['id']}_{proch}.txt", 'w+', 'utf-8').write(prescan_text)
+        codecs.open(f"{vars_dict['workpath']}{components['id']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
+def archive_engine(prescan_text, identifier, vars_dict): # This is the matching function, very important
+    """
+    This function scans files for YARA matches (if enabled) and saves files.
+
+    :param prescan_text: The raw text of the paste
+    :param identifier: The URL parameter of the paste (i.e: https://pastebin.com/{proch})
+    :param vars_dict: dict of variables returned from config()
+    :return: Nothing, saves files if they aren't blacklisted and if they are, does nothing
+    """
+    if vars_dict['yara_scanning'] is True:
+        matches = vars_dict['search_rules'].match(data=prescan_text)
+        # If there are matches, it saves them under different names
+        if matches:
+            components = {'rule': matches[0].rule,
+                          # If term is a string, do nothing. Else, decode as UTF-8
+                          'term': ((matches[0]).strings[0])[2] if isinstance(((matches[0]).strings[0])[2], str) else ((matches[0]).strings[0])[2].decode('UTF-8'),
+                          'id': (((matches[0]).strings[0])[1])[1:]}
+            # If it's blacklisted, announce and pass
+            if components['rule'] == 'blacklist':
+                print_status(f"Blacklisted term detected: [{components['term']}]")
+            # Otherwise, continue checking rules
+            else:
+                general_matching(vars_dict, prescan_text, identifier, components)
+        #If no matches are found, it just writes it with the parameter as a name
+        else:
+            print_status(f"No matches in document: {identifier}")
+            if vars_dict['saveall']:
+                codecs.open(f"{vars_dict['workpath']}{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
+    else:
+        codecs.open(f"{vars_dict['workpath']}{identifier}.txt", 'w+', "utf-8").write(prescan_text)
 #
 # Misc Program Functions:
 #
