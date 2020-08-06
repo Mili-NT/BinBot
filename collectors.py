@@ -1,4 +1,5 @@
 import lib
+import requests
 from time import sleep
 from bs4 import BeautifulSoup
 
@@ -89,16 +90,16 @@ def slexy(vars_dict):
     """
     lib.print_status("Starting slexy run...")
     # Connect to archive and get parameters for individual documents
-    soup = BeautifulSoup(lib.connect("https://slexy.org/recent").text, 'html.parser')
+    soup = BeautifulSoup(lib.connect("https://slexy.org/recent", verify_ssl=False).text, 'html.parser')
     table = soup.find("table", attrs={'id': "recent_pastes"})
     parameters = set([a['href'] for a in table.findAll('a', href=True)])
     # Loop through parameters
     for param in parameters:
         # Connect and fetch the raw text
-        document_soup = BeautifulSoup(lib.connect(f'https://slexy.org{param}').text, 'html.parser')
+        document_soup = BeautifulSoup(lib.connect(f'http://slexy.org{param}', verify_ssl=False).text, 'html.parser')
         document_table = document_soup.findAll("table")
         raw_parameter = [a['href'] for a in document_table[1].findAll('a', href=True) if 'raw' in a['href']][0]
-        unprocessed = BeautifulSoup(lib.connect(f'https://slexy.org{raw_parameter}').text, 'html.parser')
+        unprocessed = BeautifulSoup(lib.connect(f'https://slexy.org{raw_parameter}', verify_ssl=False).text, 'html.parser')
         # Pass to archive engine
         # We remove the /view/ from the param for file naming purposes
         identifier = f'slexy-{param.split("/view/")[1]}'

@@ -26,6 +26,7 @@ from zipfile import ZipFile
 from base64 import b64decode
 from bs4 import BeautifulSoup
 from datetime import datetime
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 #
 # Requests Utility Functions:
@@ -197,12 +198,18 @@ def archive_engine(prescan_text, identifier, vars_dict): # This is the matching 
 #
 # Misc Program Functions:
 #
-def connect(url):
+def connect(url, verify_ssl=True):
     """
     :param url: address to connect to
+    :param verify_ssl: Verifies SSL certificate by default, Set to False for janky certs (looking at you, slexy)
     :return: Response object for the page connected to
     """
     try:
-        return requests.get(url, headers=random_headers())
+        if verify_ssl is True:
+            return requests.get(url, headers=random_headers())
+        else:
+            # Supresses the "unverified request" warning
+            requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+            return requests.get(url, headers=random_headers(), verify=False)
     except Exception as e:
         print_error(e)

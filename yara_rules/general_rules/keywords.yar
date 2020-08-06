@@ -9,6 +9,7 @@ rule keywords
         $ghostbin = "ghostbin.com"
         $throwbin = "throwbin.com"
         $raidforums = "raidforums" wide ascii nocase
+        $firebase = "firebase" wide ascii nocase
     condition:
         any of them
 
