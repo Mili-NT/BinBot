@@ -96,7 +96,7 @@ def slexy(vars_dict):
     # Loop through parameters
     for param in parameters:
         # Connect and fetch the raw text
-        document_soup = BeautifulSoup(lib.connect(f'http://slexy.org{param}', verify_ssl=False).text, 'html.parser')
+        document_soup = BeautifulSoup(lib.connect(f'https://slexy.org{param}', verify_ssl=False).text, 'html.parser')
         document_table = document_soup.findAll("table")
         raw_parameter = [a['href'] for a in document_table[1].findAll('a', href=True) if 'raw' in a['href']][0]
         unprocessed = BeautifulSoup(lib.connect(f'https://slexy.org{raw_parameter}', verify_ssl=False).text, 'html.parser')
