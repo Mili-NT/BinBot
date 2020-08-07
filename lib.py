@@ -153,17 +153,17 @@ def general_matching(vars_dict, prescan_text, identifier, components):
         else:
             binary_matching(vars_dict, filename)
     elif components['rule'] == 'powershellArtifacts':
-        print_success(f"Powershell Artifact Found: [{components['term']}]")
+        print_success(f"Powershell Artifact On {identifier} Found: [{components['term']}]")
         codecs.open(f"{vars_dict['workpath']}{components['term']}_{identifier}.ps1", 'w+', 'utf-8').write(prescan_text)
     elif components['rule'] == 'keywords':
-        print_success(f"Keyword found: [{components['term']}]")
+        print_success(f"Keyword on {identifier} found: [{components['term']}]")
         codecs.open(f"{vars_dict['workpath']}{components['term']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     elif components['rule'] == 'regex_pattern':
-        print_success(f"{components['rule']} match found: {components['id']}")
+        print_success(f"{components['rule']} match on {identifier} found: {components['id']}")
         codecs.open(f"{vars_dict['workpath']}{components['id']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     # Custom rules will be saved by this statement:
     else:
-        print_success(f"{components['rule']} match found: {components['term']}")
+        print_success(f"{components['rule']} on {identifier} match found: {components['term']}")
         codecs.open(f"{vars_dict['workpath']}{components['id']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
 def archive_engine(prescan_text, identifier, vars_dict): # This is the matching function, very important
     """
