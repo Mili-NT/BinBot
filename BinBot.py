@@ -45,7 +45,8 @@ def config(configpath):
         # Saving options (workpath and saveall):
         while True:
             workpath = Prompt.ask(lib.stylize("Enter the path you wish to save text documents to (Leave empty for current directory)", 'input'),
-                                  default=syspath[0])
+                                  default=syspath[0],
+                                  show_default=False)
             if not path.isdir(workpath):
                 print(lib.stylize("Invalid path, check input...", 'error'))
                 continue
@@ -59,7 +60,8 @@ def config(configpath):
             for x in collectors.service_names.keys():
                 print(lib.stylize(f"[{x}]: {collectors.service_names[x]}", 'status'))
             service_choice = Prompt.ask("Enter the number(s) of the services you wish to scrape, separated by a comma (Leave blank for All)",
-                                        default="All")
+                                        default="All",
+                                        show_default=False)
             if service_choice == "All":
                 services = [collectors.service_names[x] for x in collectors.service_names.keys()]
             else:
@@ -73,9 +75,11 @@ def config(configpath):
             stop_input = True if stop_input <= 0 else stop_input
         # Limiter and Cooldown
         limiter = IntPrompt.ask(lib.stylize("Enter the request limit you wish to use (recommended: 5)", 'input'),
-                                default=5)
+                                default=5,
+                                show_default=False)
         cooldown = IntPrompt.ask(lib.stylize("Enter the cooldown between IP bans/Archive scrapes (recommended: 600)", 'input'),
-                                default=600)
+                                default=600,
+                                show_default=False)
         # YARA (yara_scanning)
         yara_scanning = Confirm.ask("Enabled scanning with YARA rules")
         # Building Settings Dict:
