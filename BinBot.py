@@ -23,7 +23,7 @@ import json
 import yara
 import collectors
 from rich import print
-from rich.prompt import Prompt,Confirm
+from rich.prompt import Prompt,Confirm, IntPrompt
 from time import sleep
 from os import path, listdir
 from sys import path as syspath
@@ -43,45 +43,39 @@ def config(configpath):
     # Manual Setup:
     if path.isfile(configpath) is False:
         # Saving options (workpath and saveall):
-        workpath = Prompt.ask("Enter the path you wish to save text documents to (enter curdir for current directory)")
         while True:
-            workpath = lib.print_input(
-                "Enter the path you wish to save text documents to (enter curdir for current directory)")
-            workpath = syspath[0] if workpath.lower() == 'curdir' else workpath
-            if path.isdir(workpath):
-                print(lib.stylize("Valid Path...", 'success'))
-                workpath = workpath if any([workpath.endswith('\\'), workpath.endswith('/')]) else f'{workpath}/'
-            else:
+            workpath = Prompt.ask(lib.stylize("Enter the path you wish to save text documents to (Leave empty for current directory)", 'input'),
+                                  default=syspath[0])
+            if not path.isdir(workpath):
                 print(lib.stylize("Invalid path, check input...", 'error'))
                 continue
+            print(lib.stylize("Valid Path...", 'success'))
+            workpath = workpath if any([workpath.endswith('\\'), workpath.endswith('/')]) else f'{workpath}/'
             break
         saveall = Confirm.ask(lib.stylize("Save all documents (Enter N to only save matched documents)?", 'input'))
         # Services to Enable (services):
+        # TODO: redesign this whole bit
         while True:
             for x in collectors.service_names.keys():
                 print(lib.stylize(f"[{x}]: {collectors.service_names[x]}", 'status'))
-            service_choice = lib.print_input("Enter the number(s) of the services you wish to scrape, "
-                                       "separated by a comma").replace(" ", '').split(',')
-            services = [collectors.service_names[int(x)] for x in service_choice if int(x) in collectors.service_names.keys()]
+            service_choice = Prompt.ask("Enter the number(s) of the services you wish to scrape, separated by a comma (Leave blank for All)",
+                                        default="All")
+            if service_choice == "All":
+                services = [collectors.service_names[x] for x in collectors.service_names.keys()]
+            else:
+                services = [collectors.service_names[int(x)] for x in service_choice if int(x) in collectors.service_names.keys()]
             services = list(collectors.service_names.values()) if services == [] else services
             break
-        # Looping, Limiter, and Cooldown Input (stop_input, limiter, cooldown):
-        while True:
-            loop_input = lib.print_input("Run in a constant loop? [y]/[n]")
-            if loop_input.lower() == 'y':
-                stop_input = True
-            else:
-                stop_input = int(lib.print_input("Enter the amount of times you want to fetch the archives: "))
-                # If they enter 0 or below pastes to fetch, run in an infinite loop:
-                stop_input = True if stop_input <= 0 else stop_input
-            # Limiter and Cooldown
-            limiter = int(lib.print_input("Enter the request limit you wish to use (recommended: 5)"))
-            cooldown = int(
-                lib.print_input("Enter the cooldown between IP bans/Archive scrapes (recommended: 600)"))
-            # If no values are entered, select the recommended
-            limiter = 5 if any([limiter <= 0, isinstance(limiter, int) is False]) else limiter
-            cooldown = 600 if any([cooldown <= 0, isinstance(cooldown, int) is False]) else cooldown
-            break
+        # Looping
+        stop_input = Confirm.ask(lib.stylize("Run in a constant loop?", 'input'))
+        if not stop_input:
+            stop_input = IntPrompt.ask(lib.stylize("Enter the amount of times you want to fetch the archives", 'input'))
+            stop_input = True if stop_input <= 0 else stop_input
+        # Limiter and Cooldown
+        limiter = IntPrompt.ask(lib.stylize("Enter the request limit you wish to use (recommended: 5)", 'input'),
+                                default=5)
+        cooldown = IntPrompt.ask(lib.stylize("Enter the cooldown between IP bans/Archive scrapes (recommended: 600)", 'input'),
+                                default=600)
         # YARA (yara_scanning)
         yara_scanning = Confirm.ask("Enabled scanning with YARA rules")
         # Building Settings Dict:
@@ -97,9 +91,7 @@ def config(configpath):
         # Saving
         savechoice = Confirm.ask(lib.stylize('Save configuration to file for repeated use?', 'input'))
         if savechoice:
-            configname = lib.print_input("Enter the config name (no extension)")
-            configname = configname.split(".")[0] if '.json' in configname else configname
-            json.dump(vars_dict, open(f"{configname}.json", 'w'))
+            json.dump(vars_dict, open(f"config.json", 'w'))
     # Loading Config:
     else:
         vars_dict = json.load(open(configpath))

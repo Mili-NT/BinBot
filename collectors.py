@@ -1,5 +1,6 @@
 import lib
 import requests
+from rich import print
 from time import sleep
 from bs4 import BeautifulSoup
 
@@ -9,7 +10,7 @@ def template_function(vars_dict):
     :param vars_dict: All scraping functions are passed vars_dict, which contains all variables needed for operation
     :return: Nothing, passes the documents to lib.archive_engine()
     """
-    lib.print_status("Starting <enter service name> run")
+    print(lib.stylize("Starting <enter service name> run", 'status'))
     # Connect to the archive page of the service and create a soup object
     template_page = lib.connect("https://templatebin.com/archive")
     template_soup = BeautifulSoup(template_page.text, 'html.parser')
@@ -41,7 +42,7 @@ def pastebin(vars_dict):
     :return: Nothing
     """
     # Fetch the pastebin public archive
-    lib.print_status(f"Starting pastebin run...")
+    print(lib.stylize(f"Starting pastebin run...", 'status'))
     arch_page = lib.connect("https://pastebin.com/archive")
     arch_soup = BeautifulSoup(arch_page.text, 'html.parser')
     sleep(2)
@@ -58,7 +59,7 @@ def pastebin(vars_dict):
         identifier = f'pastebin-{param}'
         lib.archive_engine(unprocessed, identifier, vars_dict)
         sleep(vars_dict['limiter'])
-    lib.print_success("All pastebin pastes processed.")
+    print(lib.stylize("All pastebin pastes processed.", 'success'))
 def ixio(vars_dict):
     """
     This is the scraping function for ix.io. It works very similar to the pastebin() function,
@@ -67,7 +68,7 @@ def ixio(vars_dict):
     :param vars_dict: dict of necessary variables returned from config()
     :return: nothing
     """
-    lib.print_status("Starting ix.io run...")
+    print(lib.stylize("Starting ix.io run...", 'status'))
     # Connect to archive and gather individual document parameters
     soup = BeautifulSoup(lib.connect("http://ix.io/user/").text, 'html.parser')
     # The parameter is sanitized (has its leading and trailing forward slashes removed) during this comprehension
@@ -79,7 +80,7 @@ def ixio(vars_dict):
         identifier = f'ixio-{param}'
         lib.archive_engine(str(document_soup), identifier, vars_dict)
         sleep(vars_dict['limiter'])
-    lib.print_success("All ix.io pastes processed.")
+    print(lib.stylize("All ix.io pastes processed.", 'success'))
 def slexy(vars_dict):
     """
     Scraping function for slexy. This one is almost identical to ix.io, with the exception of having some
@@ -88,7 +89,7 @@ def slexy(vars_dict):
     :param vars_dict: dict of necessary variables returned from config()
     :return: nothing
     """
-    lib.print_status("Starting slexy run...")
+    print(lib.stylize("Starting slexy run...", 'status'))
     # Connect to archive and get parameters for individual documents
     soup = BeautifulSoup(lib.connect("https://slexy.org/recent", verify_ssl=False).text, 'html.parser')
     table = soup.find("table", attrs={'id': "recent_pastes"})
@@ -105,7 +106,7 @@ def slexy(vars_dict):
         identifier = f'slexy-{param.split("/view/")[1]}'
         lib.archive_engine(str(unprocessed), identifier, vars_dict)
         sleep(5) if vars_dict['limiter'] < 5 else sleep(vars_dict['limiter'])
-    lib.print_success("All slexy pastes processed.")
+    print(lib.stylize("All slexy pastes processed.", 'success'))
 # Dict for selecting services to enable
 service_names = {1: 'pastebin', 2: 'ixio', 3:'slexy'}
 # Dict for calling the scraping functions by enumerating vars_dict['services']
