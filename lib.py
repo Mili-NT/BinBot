@@ -21,6 +21,7 @@ import os
 import gzip
 import codecs
 import requests
+from rich import print
 from random import choice
 from zipfile import ZipFile
 from base64 import b64decode
@@ -70,36 +71,21 @@ In the case of print_input, it returns an input() object
 Format: {symbol} [{time}]: {msg}
 Only difference between OS is linux has bash color code support in the format.
 """
-def print_success(msg):
-    if os.name == "nt":
-        print(f"[+] {msg}")
+
+def stylize(msg, msg_type):
+    colors = {
+        'success':('green1', '[+]'),
+        'status':('deep_sky_blue1', '[*]'),
+        'error':('bold bright_red', '[!]'),
+        'input':('bright_yellow', '[?]'),
+        'title':'bold purple'
+    }
+    styling = colors[msg_type]
+    if not msg_type == "title":
+        return f"[{styling[0]}]{styling[1]}[/{styling[0]}] [{datetime.now().strftime('%X')}] {msg}"
     else:
-        print(f"\033[1;32m[+]\033[1;m [{datetime.now().strftime('%X')}] {msg}")
-def print_status(msg):
-    if os.name == "nt":
-        print(f"[*] {msg}")
-    else:
-        print(f"\033[1;34m[*]\033[1;m [{datetime.now().strftime('%X')}] {msg}")
-def print_failure(msg):
-    if os.name == "nt":
-        print(f"[-] {msg}")
-    else:
-        print(f"\033[1;31m[-]\033[1;m [{datetime.now().strftime('%X')}] {msg}")
-def print_error(msg):
-    if os.name == "nt":
-        print(f"[!] {msg}")
-    else:
-        print(f"\033[1;31m[!]\033[1;m [{datetime.now().strftime('%X')}] {msg}")
-def print_input(msg):
-    if os.name == "nt":
-        return input(f"[?] {msg}: ")
-    else:
-        return input(f"\033[1;33m[*]\033[1;m {msg}: ")
-def print_title(msg):
-    if os.name == "nt":
-        print(msg)
-    else:
-        print(f"\033[35m {msg}")
+        return f"[{styling}]{msg}[/{styling}]"
+
 #
 # YARA Functions:
 #
@@ -119,8 +105,8 @@ def binary_matching(vars_dict, filepath):
                       'term': ((matches[0]).strings[0])[2] if isinstance(((matches[0]).strings[0])[2], str) else
                       ((matches[0]).strings[0])[2].decode('UTF-8'),
                       'id': (((matches[0]).strings[0])[1])[1:]}
-        print_success(f"{os.path.split(filepath)[1]} matches for {components['rule']}")
-        print_success(f"Matched item: {components['term']}")
+        print(stylize(f"{os.path.split(filepath)[1]} matches for {components['rule']}", 'success'))
+        print(stylize(f"Matched item: {components['term']}", 'success'))
         os.rename(filepath, f"{os.path.split(filepath)[0]}/{components['rule']}.file")
 def general_matching(vars_dict, prescan_text, identifier, components):
     """
@@ -134,7 +120,7 @@ def general_matching(vars_dict, prescan_text, identifier, components):
     :return: Nothing
     """
     if components['rule'] == 'b64Artifacts':
-        print_success(f"Base64 Artifact Found: [{components['term']}]")
+        print(stylize(f"Base64 Artifact Found: [{components['term']}]", 'success'))
         # If gzipped, decompress:
         if components['term'] == "H4sI":
             filename = f"{vars_dict['workpath']}{identifier}.file"
@@ -153,17 +139,17 @@ def general_matching(vars_dict, prescan_text, identifier, components):
         else:
             binary_matching(vars_dict, filename)
     elif components['rule'] == 'powershellArtifacts':
-        print_success(f"Powershell Artifact On {identifier} Found: [{components['term']}]")
+        print(stylize(f"Powershell Artifact On {identifier} Found: [{components['term']}]", 'success'))
         codecs.open(f"{vars_dict['workpath']}{components['term']}_{identifier}.ps1", 'w+', 'utf-8').write(prescan_text)
     elif components['rule'] == 'keywords':
-        print_success(f"Keyword on {identifier} found: [{components['term']}]")
+        print(stylize(f"Keyword on {identifier} found: [{components['term']}]", 'success'))
         codecs.open(f"{vars_dict['workpath']}{components['term']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     elif components['rule'] == 'regex_pattern':
-        print_success(f"{components['rule']} match on {identifier} found: {components['id']}")
+        print(stylize(f"{components['rule']} match on {identifier} found: {components['id']}", 'success'))
         codecs.open(f"{vars_dict['workpath']}{components['id']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     # Custom rules will be saved by this statement:
     else:
-        print_success(f"{components['rule']} on {identifier} match found: {components['term']}")
+        print(stylize(f"{components['rule']} on {identifier} match found: {components['term']}", 'success'))
         codecs.open(f"{vars_dict['workpath']}{components['id']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
 def archive_engine(prescan_text, identifier, vars_dict): # This is the matching function, very important
     """
@@ -184,13 +170,13 @@ def archive_engine(prescan_text, identifier, vars_dict): # This is the matching 
                           'id': (((matches[0]).strings[0])[1])[1:]}
             # If it's blacklisted, announce and pass
             if components['rule'] == 'blacklist':
-                print_status(f"Blacklisted term detected: [{components['term']}]")
+                print(stylize(f"Blacklisted term detected: [{components['term']}]", 'status'))
             # Otherwise, continue checking rules
             else:
                 general_matching(vars_dict, prescan_text, identifier, components)
         #If no matches are found, it just writes it with the parameter as a name IF saveall is True.
         else:
-            print_status(f"No matches in document: {identifier}")
+            print(stylize(f"No matches in document: {identifier}", 'status'))
             if vars_dict['saveall']:
                 codecs.open(f"{vars_dict['workpath']}{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     else:
@@ -212,4 +198,4 @@ def connect(url, verify_ssl=True):
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
             return requests.get(url, headers=random_headers(), verify=False)
     except Exception as e:
-        print_error(e)
+        print(stylize(e, 'error'))

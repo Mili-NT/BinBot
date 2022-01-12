@@ -22,6 +22,8 @@ import lib
 import json
 import yara
 import collectors
+from rich import print
+from rich.prompt import Prompt,Confirm
 from time import sleep
 from os import path, listdir
 from sys import path as syspath
@@ -29,6 +31,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 # Author: Mili
 # No API key(s) needed
+
+# TODO: error logging
 
 # Setup Function:
 def config(configpath):
@@ -39,23 +43,23 @@ def config(configpath):
     # Manual Setup:
     if path.isfile(configpath) is False:
         # Saving options (workpath and saveall):
+        workpath = Prompt.ask("Enter the path you wish to save text documents to (enter curdir for current directory)")
         while True:
             workpath = lib.print_input(
                 "Enter the path you wish to save text documents to (enter curdir for current directory)")
             workpath = syspath[0] if workpath.lower() == 'curdir' else workpath
             if path.isdir(workpath):
-                lib.print_success("Valid Path...")
+                print(lib.stylize("Valid Path...", 'success'))
                 workpath = workpath if any([workpath.endswith('\\'), workpath.endswith('/')]) else f'{workpath}/'
             else:
-                lib.print_error("Invalid path, check input...")
+                print(lib.stylize("Invalid path, check input...", 'error'))
                 continue
-            savechoice = input("Save all documents (Enter N to only save matched documents)? [y/n]: ")
-            saveall = True if savechoice.lower() in ['y', 'yes'] else False
             break
+        saveall = Confirm.ask(lib.stylize("Save all documents (Enter N to only save matched documents)?", 'input'))
         # Services to Enable (services):
         while True:
             for x in collectors.service_names.keys():
-                lib.print_status(f"[{x}]: {collectors.service_names[x]}")
+                print(lib.stylize(f"[{x}]: {collectors.service_names[x]}", 'status'))
             service_choice = lib.print_input("Enter the number(s) of the services you wish to scrape, "
                                        "separated by a comma").replace(" ", '').split(',')
             services = [collectors.service_names[int(x)] for x in service_choice if int(x) in collectors.service_names.keys()]
@@ -79,16 +83,7 @@ def config(configpath):
             cooldown = 600 if any([cooldown <= 0, isinstance(cooldown, int) is False]) else cooldown
             break
         # YARA (yara_scanning)
-        while True:
-            yara_choice = lib.print_input("Enable scanning documents using YARA rules? [y/n]")
-            if yara_choice.lower() not in ['y', 'n', 'yes', 'no']:
-                lib.print_error("Invalid Input.")
-                continue
-            elif yara_choice.lower() in ['y', 'yes']:
-                yara_scanning = True
-            elif yara_choice.lower() in ['n', 'no']:
-                yara_scanning = False
-            break
+        yara_scanning = Confirm.ask("Enabled scanning with YARA rules")
         # Building Settings Dict:
         vars_dict = {
             'workpath': workpath,
@@ -100,8 +95,8 @@ def config(configpath):
             'saveall': saveall,
         }
         # Saving
-        savechoice = lib.print_input('Save configuration to file for repeated use? [y]/[n]')
-        if savechoice.lower() == 'y':
+        savechoice = Confirm.ask(lib.stylize('Save configuration to file for repeated use?', 'input'))
+        if savechoice:
             configname = lib.print_input("Enter the config name (no extension)")
             configname = configname.split(".")[0] if '.json' in configname else configname
             json.dump(vars_dict, open(f"{configname}.json", 'w'))
@@ -116,6 +111,7 @@ def config(configpath):
     # Display and Return:
     try:
         print("\n")
+        # TODO: rich table
         for x in vars_dict.keys():
             if x != 'search_rules' and x != 'binary_rules':
                 print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
@@ -125,7 +121,7 @@ def config(configpath):
         return vars_dict
 # Main
 def main(args):
-    lib.print_title("""
+    print(lib.stylize("""
     _________________________________________
     [                                       ]
     [                                       ]
@@ -134,7 +130,7 @@ def main(args):
     [                                       ]
     [_______________________________________]
     Note: To load a config file, pass it as an argument
-    """)
+    """, 'title'))
     # If filepath is passed, it passes that to config().
     # If not, it passes an invalid path "" which results in manual setup
     vars_dict = config(args[1]) if len(args) > 1 else config("")
@@ -150,16 +146,16 @@ def main(args):
             # wouldnt work.
             if str(vars_dict['stop_input']) != 'True':
                 if runs >= vars_dict['stop_input']:
-                    lib.print_success(f"Runs Complete, Operation Finished...")
+                    print(lib.stylize(f"Runs Complete, Operation Finished...", 'success'))
                     exit()
-            lib.print_status(f"All services scraped, cooling down for {vars_dict['cooldown']} seconds")
+            print(lib.stylize(f"All services scraped, cooling down for {vars_dict['cooldown']} seconds", 'status'))
             sleep(vars_dict['cooldown'] / 2)
-            lib.print_status("Halfway through cooldown.")
+            print(lib.stylize("Halfway through cooldown.", 'status'))
             sleep(vars_dict['cooldown'] / 2)
-            lib.print_status("Continuing...")
+            print(lib.stylize("Continuing...", 'status'))
 
     except KeyboardInterrupt:
-        lib.print_status(f"Operation cancelled...")
+        print(lib.stylize(f"Operation cancelled...", 'status'))
         exit()
 
 if __name__ == "__main__":
