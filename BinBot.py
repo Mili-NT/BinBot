@@ -23,6 +23,8 @@ import json
 import yara
 import collectors
 from rich import print
+from rich.table import Table
+from rich.console import Console
 from rich.prompt import Prompt,Confirm, IntPrompt
 from time import sleep
 from os import path, listdir
@@ -108,10 +110,14 @@ def config(configpath):
     try:
         print("\n")
         # TODO: rich table
+        table = Table(title="Settings")
+        table.add_column("Setting")
+        table.add_column("Value", style="bold")
         for x in vars_dict.keys():
             if x != 'search_rules' and x != 'binary_rules':
-                print(f"\x1b[94m[{x}]\x1b[0m: " + f"\x1b[1;32;40m{str(vars_dict[x])}\x1b[0m")
-                print("\x1b[94m---------------------\x1b[0m")
+                table.add_row(f"{x}", f"{vars_dict[x]}")
+        console = Console()
+        console.print(table)
     finally:
         print("\n")
         return vars_dict
