@@ -22,13 +22,13 @@ import lib
 import json
 import yara
 import collectors
+from time import sleep
 from rich import print
 from rich.table import Table
-from rich.console import Console
-from rich.prompt import Prompt,Confirm, IntPrompt
-from time import sleep
 from os import path, listdir
 from sys import path as syspath
+from rich.console import Console
+from rich.prompt import Prompt,Confirm, IntPrompt
 from concurrent.futures import ThreadPoolExecutor
 
 # Author: Mili
@@ -61,7 +61,7 @@ def config(configpath):
         while True:
             for x in collectors.service_names.keys():
                 print(lib.stylize(f"[{x}]: {collectors.service_names[x]}", 'status'))
-            service_choice = Prompt.ask("Enter the number(s) of the services you wish to scrape, separated by a comma (Leave blank for All)",
+            service_choice = Prompt.ask(lib.stylize("Enter the number(s) of the services you wish to scrape, separated by a comma (Leave blank for All)", 'input'),
                                         default="All",
                                         show_default=False)
             if service_choice == "All":
@@ -83,7 +83,7 @@ def config(configpath):
                                 default=600,
                                 show_default=False)
         # YARA (yara_scanning)
-        yara_scanning = Confirm.ask("Enabled scanning with YARA rules")
+        yara_scanning = Confirm.ask(lib.stylize("Enabled scanning with YARA rules", 'input'))
         # Building Settings Dict:
         vars_dict = {
             'workpath': workpath,
@@ -109,7 +109,6 @@ def config(configpath):
     # Display and Return:
     try:
         print("\n")
-        # TODO: rich table
         table = Table(title="Settings")
         table.add_column("Setting")
         table.add_column("Value", style="bold")
@@ -144,10 +143,7 @@ def main(args):
                 for service in vars_dict['services']:
                     executor.submit(collectors.services[service], vars_dict)
             runs += 1
-            # This line is a little weird, but due to True == 1 being True, isinstance(vars_dict['stop_input'], int)
-            # wouldnt work.
-            if str(vars_dict['stop_input']) != 'True':
-                if runs >= vars_dict['stop_input']:
+            if not vars_dict['stop_input'] and runs >= vars_dict['stop_input']:
                     print(lib.stylize(f"Runs Complete, Operation Finished...", 'success'))
                     exit()
             print(lib.stylize(f"All services scraped, cooling down for {vars_dict['cooldown']} seconds", 'status'))
@@ -155,7 +151,6 @@ def main(args):
             print(lib.stylize("Halfway through cooldown.", 'status'))
             sleep(vars_dict['cooldown'] / 2)
             print(lib.stylize("Continuing...", 'status'))
-
     except KeyboardInterrupt:
         print(lib.stylize(f"Operation cancelled...", 'status'))
         exit()

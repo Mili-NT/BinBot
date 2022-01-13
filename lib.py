@@ -82,7 +82,7 @@ def stylize(msg, msg_type):
     }
     styling = colors[msg_type]
     if not msg_type == "title":
-        return f"[{styling[0]}]{styling[1]}[/{styling[0]}] [{datetime.now().strftime('%X')}] {msg}"
+        return f"[{styling[0]}]{styling[1]}[/{styling[0]}] [[green3]{datetime.now().strftime('%X')}[/green3]] {msg}"
     else:
         return f"[{styling}]{msg}[/{styling}]"
 
