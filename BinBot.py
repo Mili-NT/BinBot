@@ -28,7 +28,8 @@ from rich import print
 from rich.table import Table
 from rich.panel import Panel
 from os import path, listdir
-from rich.syntax import Syntax
+from rich.layout import Layout
+from rich.console import Group
 from sys import path as syspath
 from rich.console import Console
 from rich.prompt import Prompt,Confirm, IntPrompt
@@ -45,6 +46,7 @@ def config(configpath):
     :param configpath: path to config file, if it is blank or non-existent, it runs manual setup
     :return: vars_dict, a dictionary containing all the variables needed to run the main functions
     """
+    configpath = path.join(syspath[0], configpath)
     # Manual Setup:
     if path.isfile(configpath) is False:
         # Saving options (workpath and saveall):
@@ -112,30 +114,22 @@ def config(configpath):
     # Display and Return:
     try:
         print("\n")
-        table = Table(padding=(2,20), width=500)
-        table.add_column("[bold purple]Setting[/bold purple]")
-        table.add_column("[bold purple]Value[/bold purple]")
-        for x in vars_dict.keys():
-            if x != 'search_rules' and x != 'binary_rules':
-                table.add_row(f"[bold]{x}[/bold]", Syntax(f"{vars_dict[x]}", 'python', background_color="default"))
         console = Console()
-        console.print(table)
+        panel_group = Group(
+            lib.TITLE,
+            lib.generate_settings_table(vars_dict)
+        )
+
+        console.print(Panel(panel_group, box=box.MINIMAL), justify="center")
     finally:
         print("\n")
+        exit()
         return vars_dict
 # Main
 def main(args):
-    console = Console()
-    console.print(Panel.fit("[bold purple]Welcome to BinBot[/bold purple]",
-                    subtitle="[bold purple]Made By Mili-NT[/bold purple]",
-                    subtitle_align="center",
-                    padding=(2,20),
-                    width=500,
-                    box=box.ROUNDED),
-          justify="center")
     # If filepath is passed, it passes that to config().
     # If not, it passes an invalid path "" which results in manual setup
-    vars_dict = config(args[1]) if len(args) > 1 else config("")
+    vars_dict = config(args[1] if len(args) > 1 else "")
     try:
         # This creates a thread for every service enabled
         runs = 0
@@ -155,7 +149,6 @@ def main(args):
             print(lib.stylize("Halfway through cooldown.", 'status'))
             sleep(vars_dict['cooldown'] / 2)
             print(lib.stylize("Continuing...", 'status'))
-
     except KeyboardInterrupt:
         print(lib.stylize(f"Operation cancelled...", 'status'))
         exit()

@@ -21,12 +21,17 @@ import os
 import gzip
 import codecs
 import requests
+import rich
+from rich import box
 from rich import print
 from random import choice
 from zipfile import ZipFile
+from rich.table import Table
+from rich.panel import Panel
 from base64 import b64decode
 from bs4 import BeautifulSoup
 from datetime import datetime
+from rich.syntax import Syntax
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 #
@@ -61,17 +66,27 @@ def random_proxies():
 def random_headers():
     return {'User-Agent': choice(user_agents), 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
 #
-# Printing Functions:
-#
-"""
-These functions provide a wrapper around print() for easy terminal output.
-They take the string to be printed as the msg parameter, and calls print() on the formatted string.
-In the case of print_input, it returns an input() object
-
-Format: {symbol} [{time}]: {msg}
-Only difference between OS is linux has bash color code support in the format.
+# User Interface
+# TODO: rewrite
 """
 
+"""
+TITLE = Panel.fit("[bold purple]Welcome to BinBot[/bold purple]",
+                    subtitle="[bold purple]Made By Mili-NT[/bold purple]",
+                    subtitle_align="center",
+                    padding=(2,20),
+                    width=500,
+                    box=box.ROUNDED)
+def generate_settings_table(vars_dict):
+    table = Table()
+    max_column_widths = (max([len(f"{x}") for x in vars_dict.keys()]),
+                         max([len(f"{x}") for x in vars_dict.values()]))
+    table.add_column("[bold purple]Setting[/bold purple]", max_width=max_column_widths[0])
+    table.add_column("[bold purple]Value[/bold purple]", max_width=max_column_widths[1])
+    for x in vars_dict.keys():
+        if x != 'search_rules' and x != 'binary_rules':
+            table.add_row(f"[bold]{x}[/bold]", Syntax(f"{vars_dict[x]}", 'python', background_color="default"))
+    return table
 def stylize(msg, msg_type):
     colors = {
         'success':('green1', '[+]'),
