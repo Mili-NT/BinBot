@@ -112,12 +112,12 @@ def config(configpath):
     # Display and Return:
     try:
         print("\n")
-        table = Table(title="[bold purple]Settings[/bold purple]")
+        table = Table(padding=(2,20), width=500)
         table.add_column("[bold purple]Setting[/bold purple]")
         table.add_column("[bold purple]Value[/bold purple]")
         for x in vars_dict.keys():
             if x != 'search_rules' and x != 'binary_rules':
-                table.add_row(f"{x}", Syntax(f"{vars_dict[x]}", 'python'))
+                table.add_row(f"[bold]{x}[/bold]", Syntax(f"{vars_dict[x]}", 'python', background_color="default"))
         console = Console()
         console.print(table)
     finally:
