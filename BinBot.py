@@ -124,13 +124,14 @@ def config(configpath):
         return vars_dict
 # Main
 def main(args):
-    print(Panel.fit("[bold purple]Welcome to BinBot[/bold purple]",
-                    subtitle="[bold purple]Made By Mili-NT[/[bold purple]",
+    console = Console()
+    console.print(Panel.fit("[bold purple]Welcome to BinBot[/bold purple]",
+                    subtitle="[bold purple]Made By Mili-NT[/bold purple]",
                     subtitle_align="center",
                     padding=(2,20),
                     width=500,
                     box=box.ROUNDED),
-                  justify="center")
+          justify="center")
     # If filepath is passed, it passes that to config().
     # If not, it passes an invalid path "" which results in manual setup
     vars_dict = config(args[1]) if len(args) > 1 else config("")
