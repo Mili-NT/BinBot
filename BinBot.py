@@ -63,7 +63,7 @@ def config(configpath):
         while True:
             for x in collectors.service_names.keys():
                 print(lib.stylize(f"[{x}]: {collectors.service_names[x]}", 'status'))
-            service_choice = Prompt.ask("Enter the number(s) of the services you wish to scrape, separated by a comma (Leave blank for All)",
+            service_choice = Prompt.ask(lib.stylize("Enter the number(s) of the services you wish to scrape, separated by a comma (Leave blank for All)", 'input'),
                                         default="All",
                                         show_default=False)
             if service_choice == "All":
@@ -85,7 +85,7 @@ def config(configpath):
                                 default=600,
                                 show_default=False)
         # YARA (yara_scanning)
-        yara_scanning = Confirm.ask("Enabled scanning with YARA rules")
+        yara_scanning = Confirm.ask(lib.stylize("Enabled scanning with YARA rules", 'input'))
         # Building Settings Dict:
         vars_dict = {
             'workpath': workpath,

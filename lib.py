@@ -77,15 +77,11 @@ def stylize(msg, msg_type):
         'success':('green1', '[+]'),
         'status':('deep_sky_blue1', '[*]'),
         'error':('bold bright_red', '[!]'),
-        'input':('bright_yellow', '[?]'),
-        'title':'bold purple'
+        'input':('#d7ff00', '[?]'),
     }
     styling = colors[msg_type]
-    if not msg_type == "title":
-        return f"[{styling[0]}]{styling[1]}[/{styling[0]}] [[green3]{datetime.now().strftime('%X')}[/green3]] {msg}"
-    else:
-        return f"[{styling}]{msg}[/{styling}]"
-
+    prompt = f"[{styling[0]}]{styling[1]}[/{styling[0]}] [[bold green3]{datetime.now().strftime('%X')}[/bold green3]]"
+    return f"{prompt} {msg}"
 #
 # YARA Functions:
 #
