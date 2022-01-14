@@ -28,6 +28,7 @@ from rich import print
 from rich.table import Table
 from rich.panel import Panel
 from os import path, listdir
+from rich.syntax import Syntax
 from sys import path as syspath
 from rich.console import Console
 from rich.prompt import Prompt,Confirm, IntPrompt
@@ -116,7 +117,7 @@ def config(configpath):
         table.add_column("[bold purple]Value[/bold purple]")
         for x in vars_dict.keys():
             if x != 'search_rules' and x != 'binary_rules':
-                table.add_row(f"{x}", f"{vars_dict[x]}")
+                table.add_row(f"{x}", Syntax(f"{vars_dict[x]}", 'python'))
         console = Console()
         console.print(table)
     finally:

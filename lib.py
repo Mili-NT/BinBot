@@ -195,3 +195,4 @@ def connect(url, verify_ssl=True):
             return requests.get(url, headers=random_headers(), verify=False)
     except Exception as e:
         print(stylize(e, 'error'))
+
