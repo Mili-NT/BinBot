@@ -111,9 +111,9 @@ def config(configpath):
     # Display and Return:
     try:
         print("\n")
-        table = Table(title="Settings")
-        table.add_column("Setting")
-        table.add_column("Value", style="bold")
+        table = Table(title="[bold purple]Settings[/bold purple]")
+        table.add_column("[bold purple]Setting[/bold purple]")
+        table.add_column("[bold purple]Value[/bold purple]")
         for x in vars_dict.keys():
             if x != 'search_rules' and x != 'binary_rules':
                 table.add_row(f"{x}", f"{vars_dict[x]}")
