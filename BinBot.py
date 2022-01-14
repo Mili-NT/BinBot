@@ -22,13 +22,15 @@ import lib
 import json
 import yara
 import collectors
+from rich import box
+from time import sleep
 from rich import print
 from rich.table import Table
-from rich.console import Console
-from rich.prompt import Prompt,Confirm, IntPrompt
-from time import sleep
+from rich.panel import Panel
 from os import path, listdir
 from sys import path as syspath
+from rich.console import Console
+from rich.prompt import Prompt,Confirm, IntPrompt
 from concurrent.futures import ThreadPoolExecutor
 
 # Author: Mili
@@ -109,7 +111,6 @@ def config(configpath):
     # Display and Return:
     try:
         print("\n")
-        # TODO: rich table
         table = Table(title="Settings")
         table.add_column("Setting")
         table.add_column("Value", style="bold")
@@ -123,16 +124,13 @@ def config(configpath):
         return vars_dict
 # Main
 def main(args):
-    print(lib.stylize("""
-    _________________________________________
-    [                                       ]
-    [                                       ]
-    [           Welcome to BinBot           ]
-    [            Made by Mili-NT            ]
-    [                                       ]
-    [_______________________________________]
-    Note: To load a config file, pass it as an argument
-    """, 'title'))
+    print(Panel.fit("[bold purple]Welcome to BinBot[/bold purple]",
+                    subtitle="[bold purple]Made By Mili-NT[/[bold purple]",
+                    subtitle_align="center",
+                    padding=(2,20),
+                    width=500,
+                    box=box.ROUNDED),
+                  justify="center")
     # If filepath is passed, it passes that to config().
     # If not, it passes an invalid path "" which results in manual setup
     vars_dict = config(args[1]) if len(args) > 1 else config("")
