@@ -10,7 +10,7 @@ from os import path, listdir
 from concurrent.futures import ThreadPoolExecutor
 
 console = Console()
-testvars = json.load(open("config.json"))
+
 
 def load_config(filepath):
     configpath = path.join(sys.path[0], filepath)
