@@ -11,7 +11,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 console = Console()
 
-
 def load_config(filepath):
     configpath = path.join(sys.path[0], filepath)
     if path.isfile(configpath):
