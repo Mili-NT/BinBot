@@ -71,10 +71,11 @@ def random_headers():
 """
 
 """
+
 TITLE = Panel.fit("[bold purple]Welcome to BinBot[/bold purple]",
                     subtitle="[bold purple]Made By Mili-NT[/bold purple]",
                     subtitle_align="center",
-                    padding=(2,20),
+                    padding=(2, 20),
                     width=500,
                     box=box.ROUNDED)
 def generate_settings_table(vars_dict):
@@ -97,10 +98,11 @@ def stylize(msg, msg_type):
     styling = colors[msg_type]
     prompt = f"[{styling[0]}]{styling[1]}[/{styling[0]}] [[bold green3]{datetime.now().strftime('%X')}[/bold green3]]"
     return f"{prompt} {msg}"
+
 #
 # YARA Functions:
 #
-def binary_matching(vars_dict, filepath):
+def binary_matching(layout, vars_dict, filepath):
     """
     This handles running binary rules (i.e, for executables) on documents
 
@@ -116,10 +118,10 @@ def binary_matching(vars_dict, filepath):
                       'term': ((matches[0]).strings[0])[2] if isinstance(((matches[0]).strings[0])[2], str) else
                       ((matches[0]).strings[0])[2].decode('UTF-8'),
                       'id': (((matches[0]).strings[0])[1])[1:]}
-        print(stylize(f"{os.path.split(filepath)[1]} matches for {components['rule']}", 'success'))
-        print(stylize(f"Matched item: {components['term']}", 'success'))
+        layout.update_output(stylize(f"{os.path.split(filepath)[1]} matches for {components['rule']}", 'success'))
+        layout.update_output(stylize(f"Matched item: {components['term']}", 'success'))
         os.rename(filepath, f"{os.path.split(filepath)[0]}/{components['rule']}.file")
-def general_matching(vars_dict, prescan_text, identifier, components):
+def general_matching(layout, vars_dict, prescan_text, identifier, components):
     """
     This function handles all the categorizing for matched documents.
     It also passes all base64 encoded files to binary_matching.
@@ -131,7 +133,7 @@ def general_matching(vars_dict, prescan_text, identifier, components):
     :return: Nothing
     """
     if components['rule'] == 'b64Artifacts':
-        print(stylize(f"Base64 Artifact Found: [{components['term']}]", 'success'))
+        layout.update_output(stylize(f"Base64 Artifact Found: [{components['term']}]", 'success'))
         # If gzipped, decompress:
         if components['term'] == "H4sI":
             filename = f"{vars_dict['workpath']}{identifier}.file"
@@ -145,24 +147,24 @@ def general_matching(vars_dict, prescan_text, identifier, components):
             zip_dir = f"{vars_dict['workpath']}/{os.path.split(filename)[1].split('.')[0]}"
             ZipFile(filename, "r").extractall(zip_dir)
             for file in [os.path.join(vars_dict['workpath'], f) for f in os.listdir(zip_dir)]:
-                binary_matching(vars_dict, file)
+                binary_matching(layout, vars_dict, file)
         # If not zipped, pass the singular file to binary_matching
         else:
-            binary_matching(vars_dict, filename)
+            binary_matching(layout, vars_dict, filename)
     elif components['rule'] == 'powershellArtifacts':
-        print(stylize(f"Powershell Artifact On {identifier} Found: [{components['term']}]", 'success'))
+        layout.update_output(stylize(f"Powershell Artifact On {identifier} Found: [{components['term']}]", 'success'))
         codecs.open(f"{vars_dict['workpath']}{components['term']}_{identifier}.ps1", 'w+', 'utf-8').write(prescan_text)
     elif components['rule'] == 'keywords':
-        print(stylize(f"Keyword on {identifier} found: [{components['term']}]", 'success'))
+        layout.update_output(stylize(f"Keyword on {identifier} found: [{components['term']}]", 'success'))
         codecs.open(f"{vars_dict['workpath']}{components['term']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     elif components['rule'] == 'regex_pattern':
-        print(stylize(f"{components['rule']} match on {identifier} found: {components['id']}", 'success'))
+        layout.update_output(stylize(f"{components['rule']} match on {identifier} found: {components['id']}", 'success'))
         codecs.open(f"{vars_dict['workpath']}{components['id']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     # Custom rules will be saved by this statement:
     else:
-        print(stylize(f"{components['rule']} on {identifier} match found: {components['term']}", 'success'))
+        layout.update_output(stylize(f"{components['rule']} on {identifier} match found: {components['term']}", 'success'))
         codecs.open(f"{vars_dict['workpath']}{components['id']}_{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
-def archive_engine(prescan_text, identifier, vars_dict): # This is the matching function, very important
+def archive_engine(layout, prescan_text, identifier, vars_dict): # This is the matching function, very important
     """
     This function scans files for YARA matches (if enabled) and saves files.
 
@@ -181,13 +183,13 @@ def archive_engine(prescan_text, identifier, vars_dict): # This is the matching 
                           'id': (((matches[0]).strings[0])[1])[1:]}
             # If it's blacklisted, announce and pass
             if components['rule'] == 'blacklist':
-                print(stylize(f"Blacklisted term detected: [{components['term']}]", 'status'))
+                layout.update_output(stylize(f"Blacklisted term detected: [{components['term']}]", 'status'))
             # Otherwise, continue checking rules
             else:
-                general_matching(vars_dict, prescan_text, identifier, components)
+                general_matching(layout, vars_dict, prescan_text, identifier, components)
         #If no matches are found, it just writes it with the parameter as a name IF saveall is True.
         else:
-            print(stylize(f"No matches in document: {identifier}", 'status'))
+            layout.update_output(stylize(f"No matches in document: {identifier}", 'status'))
             if vars_dict['saveall']:
                 codecs.open(f"{vars_dict['workpath']}{identifier}.txt", 'w+', 'utf-8').write(prescan_text)
     else:
@@ -195,7 +197,7 @@ def archive_engine(prescan_text, identifier, vars_dict): # This is the matching 
 #
 # Misc Program Functions:
 #
-def connect(url, verify_ssl=True):
+def connect(layout, url, verify_ssl=True):
     """
     :param url: address to connect to
     :param verify_ssl: Verifies SSL certificate by default, Set to False for janky certs (looking at you, slexy)
@@ -209,5 +211,5 @@ def connect(url, verify_ssl=True):
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
             return requests.get(url, headers=random_headers(), verify=False)
     except Exception as e:
-        print(stylize(e, 'error'))
+        layout.update_output(stylize(e, 'error'))
 

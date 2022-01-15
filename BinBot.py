@@ -1,158 +1,129 @@
-#!/usr/bin/env python3
-# -----------------------------------------------------------------------
-# A small python script to scrape the public pastebin archive.
-# Copyright (C) 2019  Mili
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-# -----------------------------------------------------------------------
-
 import sys
-import lib
-import json
 import yara
-import collectors
-from rich import box
+from rich.live import Live
 from time import sleep
 from rich import print
-from rich.table import Table
-from rich.panel import Panel
+import collectors
+from classes import *
+import json
 from os import path, listdir
-from rich.layout import Layout
-from rich.console import Group
-from sys import path as syspath
-from rich.console import Console
-from rich.prompt import Prompt,Confirm, IntPrompt
 from concurrent.futures import ThreadPoolExecutor
 
-# Author: Mili
-# No API key(s) needed
+console = Console()
+testvars = json.load(open("config.json"))
 
-# TODO: error logging
-
-# Setup Function:
-def config(configpath):
-    """
-    :param configpath: path to config file, if it is blank or non-existent, it runs manual setup
-    :return: vars_dict, a dictionary containing all the variables needed to run the main functions
-    """
-    configpath = path.join(syspath[0], configpath)
-    # Manual Setup:
-    if path.isfile(configpath) is False:
-        # Saving options (workpath and saveall):
-        while True:
-            workpath = Prompt.ask(lib.stylize("Enter the path you wish to save text documents to (Leave empty for current directory)", 'input'),
-                                  default=syspath[0],
-                                  show_default=False)
-            if not path.isdir(workpath):
-                print(lib.stylize("Invalid path, check input...", 'error'))
-                continue
-            print(lib.stylize("Valid Path...", 'success'))
-            workpath = workpath if any([workpath.endswith('\\'), workpath.endswith('/')]) else f'{workpath}/'
-            break
-        saveall = Confirm.ask(lib.stylize("Save all documents (Enter N to only save matched documents)?", 'input'))
-        # Services to Enable (services):
-        # TODO: redesign this whole bit
-        while True:
-            for x in collectors.service_names.keys():
-                print(lib.stylize(f"[{x}]: {collectors.service_names[x]}", 'status'))
-            service_choice = Prompt.ask(lib.stylize("Enter the number(s) of the services you wish to scrape, separated by a comma (Leave blank for All)", 'input'),
-                                        default="All",
-                                        show_default=False)
-            if service_choice == "All":
-                services = [collectors.service_names[x] for x in collectors.service_names.keys()]
-            else:
-                services = [collectors.service_names[int(x)] for x in service_choice if int(x) in collectors.service_names.keys()]
-            services = list(collectors.service_names.values()) if services == [] else services
-            break
-        # Looping
-        stop_input = Confirm.ask(lib.stylize("Run in a constant loop?", 'input'))
-        if not stop_input:
-            stop_input = IntPrompt.ask(lib.stylize("Enter the amount of times you want to fetch the archives", 'input'))
-            stop_input = True if stop_input <= 0 else stop_input
-        # Limiter and Cooldown
-        limiter = IntPrompt.ask(lib.stylize("Enter the request limit you wish to use (recommended: 5)", 'input'),
-                                default=5,
-                                show_default=False)
-        cooldown = IntPrompt.ask(lib.stylize("Enter the cooldown between IP bans/Archive scrapes (recommended: 600)", 'input'),
-                                default=600,
-                                show_default=False)
-        # YARA (yara_scanning)
-        yara_scanning = Confirm.ask(lib.stylize("Enabled scanning with YARA rules", 'input'))
-        # Building Settings Dict:
-        vars_dict = {
-            'workpath': workpath,
-            'stop_input': stop_input,
-            'limiter': limiter,
-            'cooldown': cooldown,
-            'yara_scanning': yara_scanning,
-            'services': services,
-            'saveall': saveall,
-        }
-        # Saving
-        savechoice = Confirm.ask(lib.stylize('Save configuration to file for repeated use?', 'input'))
-        if savechoice:
-            json.dump(vars_dict, open(f"config.json", 'w'))
-    # Loading Config:
-    else:
+def load_config(filepath):
+    configpath = path.join(sys.path[0], filepath)
+    if path.isfile(configpath):
         vars_dict = json.load(open(configpath))
-    # YARA Compilation:
-    # YARA rules aren't written to files because they cant be serialized
-    if vars_dict['yara_scanning']:
-        vars_dict['search_rules'] = yara.compile(filepaths={f.split('.')[0]: path.join(f'{syspath[0]}/yara_rules/general_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/general_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/general_rules/', f)) and f.endswith(".yar") or f.endswith(".yara")})
-        vars_dict['binary_rules'] = yara.compile(filepaths={f.split('.')[0]: path.join(f'{syspath[0]}/yara_rules/binary_rules/', f) for f in listdir(f'{syspath[0]}/yara_rules/binary_rules/') if path.isfile(path.join(f'{syspath[0]}/yara_rules/binary_rules/', f)) and f.endswith(".yar") or f.endswith(".yara")})
-    # Display and Return:
-    try:
-        print("\n")
-        console = Console()
-        panel_group = Group(
-            lib.TITLE,
-            lib.generate_settings_table(vars_dict)
-        )
-
-        console.print(Panel(panel_group, box=box.MINIMAL), justify="center")
-    finally:
-        print("\n")
-        exit()
+        if vars_dict['yara_scanning']:
+            search_rules = {f.split('.')[0]: path.join(f'{sys.path[0]}/yara_rules/general_rules/', f) for f in
+                            listdir(f'{sys.path[0]}/yara_rules/general_rules/') if
+                            path.isfile(path.join(f'{sys.path[0]}/yara_rules/general_rules/', f)) and f.endswith(
+                                ".yar") or f.endswith(".yara")}
+            binary_rules = {f.split('.')[0]: path.join(f'{sys.path[0]}/yara_rules/binary_rules/', f) for f in
+                            listdir(f'{sys.path[0]}/yara_rules/binary_rules/') if
+                            path.isfile(path.join(f'{sys.path[0]}/yara_rules/binary_rules/', f)) and f.endswith(
+                                ".yar") or f.endswith(".yara")}
+            vars_dict['search_rules'] = yara.compile(filepaths=search_rules)
+            vars_dict['binary_rules'] = yara.compile(filepaths=binary_rules)
         return vars_dict
-# Main
+def manual_setup():
+    # Saving options (workpath and saveall):
+    while True:
+        workpath = Prompt.ask(
+            lib.stylize("Enter the path you wish to save text documents to (Leave empty for current directory)",
+                        'input'),
+            default=sys.path[0],
+            show_default=False)
+        if not path.isdir(workpath):
+            console.print(lib.stylize("Invalid path, check input...", 'error'))
+            continue
+        print(lib.stylize("Valid Path...", 'success'))
+        workpath = workpath if any([workpath.endswith('\\'), workpath.endswith('/')]) else f'{workpath}/'
+        break
+    saveall = Confirm.ask(lib.stylize("Save all documents (Enter N to only save matched documents)?", 'input'))
+    # Services to Enable (services):
+    # TODO: redesign this whole bit
+    while True:
+        for x in collectors.service_names.keys():
+            print(lib.stylize(f"[{x}]: {collectors.service_names[x]}", 'status'))
+        service_choice = Prompt.ask(lib.stylize(
+            "Enter the number(s) of the services you wish to scrape, separated by a comma (Leave blank for All)",
+            'input'),
+                                    default="All",
+                                    show_default=False)
+        if service_choice == "All":
+            services = [collectors.service_names[x] for x in collectors.service_names.keys()]
+        else:
+            services = [collectors.service_names[int(x)] for x in service_choice if
+                        int(x) in collectors.service_names.keys()]
+        services = list(collectors.service_names.values()) if services == [] else services
+        break
+    # Looping
+    stop_input = Confirm.ask(lib.stylize("Run in a constant loop?", 'input'))
+    if not stop_input:
+        stop_input = IntPrompt.ask(lib.stylize("Enter the amount of times you want to fetch the archives", 'input'))
+        stop_input = True if stop_input <= 0 else stop_input
+    # Limiter and Cooldown
+    limiter = IntPrompt.ask(lib.stylize("Enter the request limit you wish to use (recommended: 5)", 'input'),
+                            default=5,
+                            show_default=False)
+    cooldown = IntPrompt.ask(
+        lib.stylize("Enter the cooldown between IP bans/Archive scrapes (recommended: 600)", 'input'),
+        default=600,
+        show_default=False)
+    # YARA (yara_scanning)
+    yara_scanning = Confirm.ask(lib.stylize("Enabled scanning with YARA rules", 'input'))
+    # Building Settings Dict:
+    vars_dict = {
+        'workpath': workpath,
+        'stop_input': stop_input,
+        'limiter': limiter,
+        'cooldown': cooldown,
+        'yara_scanning': yara_scanning,
+        'services': services,
+        'saveall': saveall,
+        'rule_count': (0, 0)
+    }
+    if yara_scanning:
+        search_rules = {f.split('.')[0]: path.join(f'{sys.path[0]}/yara_rules/general_rules/', f) for f in
+                        listdir(f'{sys.path[0]}/yara_rules/general_rules/') if
+                        path.isfile(path.join(f'{sys.path[0]}/yara_rules/general_rules/', f)) and f.endswith(
+                            ".yar") or f.endswith(".yara")}
+        binary_rules = {f.split('.')[0]: path.join(f'{sys.path[0]}/yara_rules/binary_rules/', f) for f in
+                        listdir(f'{sys.path[0]}/yara_rules/binary_rules/') if
+                        path.isfile(path.join(f'{sys.path[0]}/yara_rules/binary_rules/', f)) and f.endswith(
+                            ".yar") or f.endswith(".yara")}
+        vars_dict['rule_count'] = (len(search_rules), len(binary_rules))
+    # Saving
+    savechoice = Confirm.ask(lib.stylize('Save configuration to file for repeated use?', 'input'))
+    if savechoice:
+        json.dump(vars_dict, open(f"config.json", 'w'))
+    return vars_dict
+
 def main(args):
-    # If filepath is passed, it passes that to config().
-    # If not, it passes an invalid path "" which results in manual setup
-    vars_dict = config(args[1] if len(args) > 1 else "")
-    try:
-        # This creates a thread for every service enabled
+    if len(args) > 1:
+        vars_dict = load_config(args[1])
+    else:
+        vars_dict = manual_setup()
+    layout = UI(console, vars_dict)
+    layout.console.clear()
+    with Live(layout.layout, refresh_per_second=60, screen=True, console=layout.console) as live:
         runs = 0
         while True:
             with ThreadPoolExecutor(max_workers=len(vars_dict['services'])) as executor:
                 for service in vars_dict['services']:
-                    executor.submit(collectors.services[service], vars_dict)
-            runs += 1
-            # This line is a little weird, but due to True == 1 being True, isinstance(vars_dict['stop_input'], int)
-            # wouldnt work.
-            if str(vars_dict['stop_input']) != 'True':
+                    executor.submit(collectors.services[service], layout, vars_dict)
+            if not vars_dict['stop_input']:
                 if runs >= vars_dict['stop_input']:
-                    print(lib.stylize(f"Runs Complete, Operation Finished...", 'success'))
+                    layout.update_output(lib.stylize(f"Runs Complete, Operation Finished...", 'success'))
                     exit()
-            print(lib.stylize(f"All services scraped, cooling down for {vars_dict['cooldown']} seconds", 'status'))
+            layout.update_output(lib.stylize(f"All services scraped, cooling down for {vars_dict['cooldown']} seconds", 'status'))
             sleep(vars_dict['cooldown'] / 2)
-            print(lib.stylize("Halfway through cooldown.", 'status'))
+            layout.update_output(lib.stylize("Halfway through cooldown.", 'status'))
             sleep(vars_dict['cooldown'] / 2)
-            print(lib.stylize("Continuing...", 'status'))
-    except KeyboardInterrupt:
-        print(lib.stylize(f"Operation cancelled...", 'status'))
-        exit()
+            layout.update_output(lib.stylize("Continuing...", 'status'))
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(sys.argv)
-
