@@ -35,7 +35,7 @@ class UI:
             ),
             padding=(1, 2),
             border_style="#00afd7",
-            title="Settings",
+            title="Output",
         )
         return message_panel
     def make_settings(self, settings):
