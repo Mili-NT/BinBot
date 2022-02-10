@@ -27,5 +27,5 @@ and credited individually in the rule files.
 was an inspiration for the base64 rules
 * [r/learnpython](https://www.reddit.com/r/learnpython/), as always
 ## Planned Features and TODO:
-- Fix whatever is making the services skip directly to cooldown sometimes
+- Fix error in service multithreading that causes runs to immediately end
 
